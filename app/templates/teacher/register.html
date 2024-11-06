@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>教員新規登録</title>
+</head>
+<body>
+    <h1>教員新規登録</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <form action="{{ url_for('app.teacher.register.register') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="teacher_number">教員番号:</label>
+        <input type="text" name="teacher_number" required><br>
+
+        <label for="password">パスワード:</label>
+        <input type="password" name="password" required><br>
+
+        <label for="last_name">姓:</label>
+        <input type="text" name="last_name" required><br>
+
+        <label for="first_name">名:</label>
+        <input type="text" name="first_name" required><br>
+
+        <label for="kana_last_name">姓（カナ）:</label>
+        <input type="text" name="kana_last_name" required><br>
+
+        <label for="kana_first_name">名（カナ）:</label>
+        <input type="text" name="kana_first_name" required><br>
+
+        <button type="submit">登録</button>
+    </form>
+    <p>すでにアカウントをお持ちの方は <a href="{{ url_for('app.teacher.login.login') }}">こちら</a> からログインしてください。</p>
+</body>
+</html>

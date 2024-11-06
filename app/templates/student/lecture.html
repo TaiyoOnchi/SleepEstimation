@@ -1,0 +1,25 @@
+<!-- templates/student/lecture.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>講義情報登録</title>
+</head>
+<body>
+    <h1>講義情報登録</h1>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="classroom">教室:</label>
+        <input type="text" id="classroom" name="classroom" required><br><br>
+        
+        <label for="seat_number">座席番号:</label>
+        <input type="text" id="seat_number" name="seat_number" required><br><br>
+        
+        <label for="period">時限:</label>
+        <input type="text" id="period" name="period" required><br><br>
+        
+        <button type="submit">登録</button>
+    </form>
+</body>
+</html>

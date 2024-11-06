@@ -1,0 +1,16 @@
+<!-- templates/student/index.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生アプリ - ホーム</title>
+</head>
+<body>
+    <h1>学生アプリへようこそ</h1>
+    <p>以下から登録またはログインを行ってください。</p>
+    <a href="{{ url_for('app.student.register.register') }}">新規登録</a><br>
+    <a href="{{ url_for('app.student.login.login') }}">ログイン</a><br>
+    <a href="{{ url_for('app.home.teacher_top.teacher_top') }}">教員の方はこちら</a>
+</body>
+</html>

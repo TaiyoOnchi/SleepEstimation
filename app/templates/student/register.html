@@ -1,0 +1,49 @@
+<!-- templates/student/register.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生アプリ - 新規登録</title>
+</head>
+<body>
+    <h1>新規登録</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="student_number">学籍番号:</label>
+        <input type="text" id="student_number" name="student_number" required><br><br>
+
+        <label for="password">パスワード:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <label for="last_name">姓:</label>
+        <input type="text" id="last_name" name="last_name" required><br><br>
+
+        <label for="first_name">名:</label>
+        <input type="text" id="first_name" name="first_name" required><br><br>
+
+        <label for="kana_last_name">姓（カナ）:</label>
+        <input type="text" id="kana_last_name" name="kana_last_name" required><br><br>
+
+        <label for="kana_first_name">名（カナ）:</label>
+        <input type="text" id="kana_first_name" name="kana_first_name" required><br><br>
+
+        <label for="gender">性別:</label>
+        <select id="gender" name="gender" required>
+            <option value="0">男性</option>
+            <option value="1">女性</option>
+        </select><br><br>
+        <button type="submit">登録</button>
+    </form>
+    <p>すでにアカウントをお持ちの方は <a href="{{ url_for('app.student.login.login') }}">こちら</a> からログインしてください。</p>
+</body>
+</html>

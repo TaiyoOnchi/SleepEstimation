@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開眼率基準値測定</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .message {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        .loading {
+            font-size: 1.5em;
+            color: #555;
+        }
+        #countdown {
+            font-size: 2em;
+            margin: 20px;
+            color: red;
+        }
+        #start-button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>開眼率基準値測定</h1>
+        <p class="message">大きく目を開けて、カメラを見つめてください。</p>
+        <button id="start-button">測定開始</button>
+        <video id="video" width="640" height="480" autoplay></video>
+        <div id="countdown"></div>
+        <p class="loading" style="display: none;">測定中です...</p>
+    </div>
+
+    <script>
+        const socket = io();
+        const video = document.getElementById('video');
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        // カメラ映像を取得
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error('カメラにアクセスできません: ', error);
+            });
+
+        // 測定開始ボタンのクリックイベント
+        document.getElementById('start-button').onclick = function() {
+            this.disabled = true;
+            document.querySelector('.loading').style.display = 'block';
+        
+            let countdown = 3;
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.innerText = countdown;
+        
+            const interval = setInterval(function() {
+                countdown -= 1;
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    countdownElement.innerText = "撮影中...";
+        
+                    const frames = [];  // フレーム（画像データ）を格納する配列
+        
+                    // 3回フレームを取得して1秒ごとにサーバーに送信
+                    let frameCount = 0;
+                    const sendFramesInterval = setInterval(function() {
+                        if (frameCount >= 3) {
+                            clearInterval(sendFramesInterval);
+        
+                            // 3枚のフレームが揃ったらサーバーに送信
+                            socket.emit('measure_baseline', { frames: frames });
+                            return;
+                        }
+        
+                        // 現在のビデオフレームをCanvasに描画し、データを取得
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = canvas.toDataURL('image/jpeg').split(',')[1];
+                        frames.push(imageData);  // 画像データを配列に追加
+        
+                        frameCount++;
+                    }, 1000);
+                } else {
+                    countdownElement.innerText = countdown;
+                }
+            }, 1000);
+        };
+        
+
+        // 測定完了通知
+        socket.on('measurement_complete', function(data) {
+            alert(data.message);
+            window.location.href = data.redirect_url;
+        });
+
+        // 測定キャンセル処理
+        //window.onbeforeunload = function() {
+        //    navigator.sendBeacon('/cancel_measurement');
+        //}; 
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生アプリ - ログイン</title>
+</head>
+<body>
+    <h1>ログイン</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li style="color: red;">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="student_number">学籍番号:</label>
+        <input type="text" id="student_number" name="student_number" required><br><br>
+
+        <label for="password">パスワード:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <button type="submit">ログイン</button>
+    </form>
+    <p>アカウントをお持ちでない方は <a href="{{ url_for('app.student.register.register') }}">こちら</a> から新規登録してください。</p>    
+</body>
+</html>

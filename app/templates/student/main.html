@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メインページ</title>
+</head>
+<body>
+    <h1>メインページ</h1>
+    <h2>講義情報</h2>
+    <p>教室: {{ classroom }}</p>
+    <p>座席番号: {{ seat_number }}</p>
+    <p>時限: {{ period }}</p>
+
+    <h1>カメラ映像を表示中</h1>
+    <video id="video" width="640" height="480" autoplay muted></video>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const video = document.getElementById('video');
+
+        // カメラを起動して映像を表示
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error("カメラの使用を許可してください。", error);
+            });
+
+        // 5秒ごとに画像データを取得し、サーバーに送信
+        setInterval(() => {
+            // 画面キャプチャ用のCanvasを作成
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // 画像データを取得し、サーバーに送信
+            const imageData = canvas.toDataURL('image/jpeg');
+            socket.emit('monitor_eye_openness', imageData);
+        }, 5000); // 5秒間隔で送信
+
+        // サーバーからの画像データを受信して表示（必要ならば）
+        socket.on('image_update', function(imageData) {
+            video.src = 'data:image/jpeg;base64,' + imageData;
+        });
+
+        // ページ終了時の測定キャンセル処理
+        window.onbeforeunload = function() {
+            navigator.sendBeacon('/cancel_measurement');  // 非同期でキャンセルリクエストを送信
+        };
+    </script>
+    <a href="{{ url_for('app.auth.logout') }}">ログアウト</a>
+</body>
+</html>

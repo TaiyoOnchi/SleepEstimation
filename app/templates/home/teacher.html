@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生アプリ(教員側) - ホーム</title>
+</head>
+<body>
+    <h1>学生アプリへようこそ(教員側)</h1>
+    <p>以下から登録またはログインを行ってください。</p>
+    <a href="{{ url_for('app.teacher.register.register') }}">新規登録</a><br>
+    <a href="{{ url_for('app.teacher.login.login') }}">ログイン</a><br>
+    <a href="{{ url_for('app.home.top.top') }}">学生の方はこちら</a>
+</body>
+</html>
