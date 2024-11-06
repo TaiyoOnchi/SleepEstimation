@@ -1,4 +1,3 @@
-# app/student/__init__.py
 from flask import Blueprint
 
 from .dashboard import dashboard_bp

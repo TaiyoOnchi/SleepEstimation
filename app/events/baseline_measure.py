@@ -1,10 +1,18 @@
 from flask import session, url_for
 from app import socketio
 from app.eye_openness import decode_image, process_image, save_baseline_to_database
+from ..utils import verify_token
 
 
 @socketio.on('measure_baseline')
 def measure_baseline_eye_openness(data):
+    token = data.get('token')  # クライアントからトークンを受け取る
+    token_data = verify_token(token)  # トークンの検証
+
+    if not token_data:
+        socketio.emit('measurement_complete', {'message': '認証エラー：トークンが無効です。再試行してください。','redirect_url': url_for('app.student.measure_baseline.measure_baseline')})
+        return
+    
     frames = data['frames']
     student_info = session.get('student_info')
     max_sum_openness = None

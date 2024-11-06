@@ -51,12 +51,16 @@
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
 
+        // トークンをFlaskテンプレートから取得
+        const token = "{{ token }}";  // Flaskから渡されたトークンを取得
+
         // カメラ映像を取得
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
             })
             .catch(error => {
+                alert('カメラにアクセスできません。ブラウザの設定でカメラアクセスを許可してください。');
                 console.error('カメラにアクセスできません: ', error);
             });
 
@@ -84,7 +88,7 @@
                             clearInterval(sendFramesInterval);
         
                             // 3枚のフレームが揃ったらサーバーに送信
-                            socket.emit('measure_baseline', { frames: frames });
+                            socket.emit('measure_baseline', { frames: frames, token: token });
                             return;
                         }
         

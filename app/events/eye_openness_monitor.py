@@ -1,11 +1,11 @@
-from flask_login import current_user
+from flask_login import current_user,login_required
 from app import socketio
-import sqlite3
 from app.eye_openness import decode_image, process_image,save_eye_openness
 from app.utils.database import get_db_connection
 
 
 @socketio.on('monitor_eye_openness')
+@login_required
 def monitor_eye_openness(image_data): # 開眼率測定
     student_number = current_user.student_number
     

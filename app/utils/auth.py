@@ -5,6 +5,7 @@ from app.models.teacher import Teacher
 from app.utils.database import get_db_connection
 
 
+
 def load_user(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()

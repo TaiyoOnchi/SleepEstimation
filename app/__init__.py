@@ -6,7 +6,7 @@ from config import Config
 from db_setup import init_db
 from app.utils import load_user  # load_user関数をインポート
 
-socketio = SocketIO()
+socketio = SocketIO(cors_allowed_origins=Config.CORS_ALLOWED_ORIGINS)
 csrf = CSRFProtect()
 login_manager = LoginManager()
 login_manager.login_view = 'app.student.login.login'
