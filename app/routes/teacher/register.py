@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash,session
 from flask_login import login_user
 from app.models import Teacher
 from werkzeug.security import generate_password_hash
@@ -43,6 +43,7 @@ def register():
         # 登録完了メッセージ
         flash("教員が登録されました。")
         teacher = Teacher(teacher_data[0], teacher_data[1], teacher_data[2], teacher_data[3], teacher_data[4])  # Teacherオブジェクトを作成
+        session['role'] = 'teacher'
         login_user(teacher)
         return redirect(url_for('app.teacher.dashboard.dashboard'))
 

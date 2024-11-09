@@ -1,11 +1,17 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request
 from flask_login import login_required, current_user
+from app.utils import student_required
+
 
 lecture_bp = Blueprint('lecture', __name__)
 
 @lecture_bp.route('/lecture', methods=['GET', 'POST'])
 @login_required
+@student_required
 def lecture():
+    print(f"Current user role: {current_user.role}", flush=True)
+
+
     if 'student_info' in session:
         student_info = session['student_info']
         session['student_number'] = student_info['student_number']

@@ -30,10 +30,4 @@ def load_user(user_id):
     
     return None
 
-def handle_authenticated_user():
-    if current_user.is_authenticated:
-        flash('既にログインしています。')
-        if current_user.role == 'student':
-            return redirect(url_for('app.student.dashboard.dashboard'))
-        else:
-            return redirect(url_for('teacher_dashboard'))
+

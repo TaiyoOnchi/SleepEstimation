@@ -18,6 +18,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script>
         const socket = io();
+        socket.emit('main_page_visited');
         const video = document.getElementById('video');
 
         // カメラを起動して映像を表示
@@ -48,10 +49,28 @@
             video.src = 'data:image/jpeg;base64,' + imageData;
         });
 
-        // ページ終了時の測定キャンセル処理
-        window.onbeforeunload = function() {
-            navigator.sendBeacon('/cancel_measurement');  // 非同期でキャンセルリクエストを送信
-        };
+        // ページ読み込み時に通知の許可をリクエスト
+        document.addEventListener('DOMContentLoaded', () => {
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission();
+            }
+        });
+        
+        function showNotification(message) {
+            if (Notification.permission === 'granted') {
+                new Notification('通知', { body: message });
+            } else {
+                console.log("通知が許可されていません");
+            }
+        }
+        
+
+        // サーバーからの警告メッセージを受信したら通知を表示
+        socket.on('low_eye_openness_alert', function(data) {
+            showNotification(data.message);
+        });
+
+
     </script>
     <a href="{{ url_for('app.auth.logout') }}">ログアウト</a>
 </body>

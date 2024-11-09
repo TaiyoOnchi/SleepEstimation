@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash,session
 from flask_login import login_user
 from werkzeug.security import check_password_hash
 from app.models import Teacher
@@ -24,6 +24,7 @@ def login():
         if teacher_data:
             if check_password_hash(teacher_data[2], password):  # パスワードは3番目の要素
                 teacher = Teacher(teacher_data[0], teacher_data[1], teacher_data[2], teacher_data[3], teacher_data[4])  # Teacherオブジェクトを作成
+                session['role'] = 'teacher'
                 login_user(teacher)  # ログイン
                 return redirect(url_for('app.teacher.dashboard.dashboard'))  # 教員ダッシュボードにリダイレクト
             else:
