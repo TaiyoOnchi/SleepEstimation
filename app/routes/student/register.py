@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
 from werkzeug.security import generate_password_hash
-from app.utils import get_db_connection
+
 
 register_bp = Blueprint('register', __name__)
 
@@ -25,7 +25,7 @@ def register():
         kana_first_name = request.form['kana_first_name']
         gender = request.form['gender']
 
-        conn = get_db_connection()
+        conn = current_app.get_db()
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM students WHERE student_number = ?', (student_number,))
         existing_user = cursor.fetchone()

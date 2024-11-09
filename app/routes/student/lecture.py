@@ -9,16 +9,11 @@ lecture_bp = Blueprint('lecture', __name__)
 @login_required
 @student_required
 def lecture():
-    print(f"Current user role: {current_user.role}", flush=True)
+    #print(f"Current user role: {current_user.role}", flush=True)
 
 
     if 'student_info' in session:
-        student_info = session['student_info']
-        session['student_number'] = student_info['student_number']
         session.pop('student_info', None)
-
-    if 'student_number' not in session:
-        return redirect(url_for('student.login'))
 
     if request.method == 'POST':
         classroom = request.form.get('classroom')

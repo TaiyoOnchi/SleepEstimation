@@ -1,8 +1,8 @@
 import sqlite3
-from app.utils.database import get_db_connection
+from flask import current_app
 
 def save_eye_openness(student_number, right_eye_openness, left_eye_openness):
-    conn = get_db_connection()
+    conn = current_app.get_db()
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO eye_openness (student_id, right_eye_openness, left_eye_openness)

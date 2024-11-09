@@ -8,7 +8,4 @@ dashboard_bp = Blueprint('dashboard', __name__)
 @login_required
 @student_required
 def dashboard():
-    if current_user.is_authenticated and current_user.role == 'student':
-        return render_template('student/dashboard.html')
-    flash('学生でログインしてください')
     return redirect(url_for('student.login'))

@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash,session
+from flask import Blueprint, render_template, request, redirect, url_for, flash,session,current_app
 from flask_login import login_user
 from app.models import Teacher
 from werkzeug.security import generate_password_hash
-from app.utils import get_db_connection
+# from app.utils import get_db_connection
 
 register_bp = Blueprint('register', __name__)
 
@@ -17,7 +17,7 @@ def register():
         kana_first_name = request.form['kana_first_name']
 
         # データベースに接続
-        conn = get_db_connection()
+        conn = current_app.get_db()
         cursor = conn.cursor()
 
         # 既に教員が存在するかチェック

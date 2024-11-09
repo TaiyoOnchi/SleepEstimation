@@ -10,4 +10,5 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key') 
     SESSION_TYPE = 'filesystem'
     CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS")
+    DATABASE = 'users.db'  # SQLiteデータベースのパスを指定
     

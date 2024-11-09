@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash,session
+from flask import Blueprint, render_template, request, redirect, url_for, flash,session,current_app
 from flask_login import login_user
 from werkzeug.security import check_password_hash
 from app.models import Teacher
-from app.utils import get_db_connection
+
 
 login_bp = Blueprint('login', __name__)
 
@@ -13,7 +13,7 @@ def login():
         password = request.form['password']
 
         # データベースに接続
-        conn = get_db_connection()
+        conn = current_app.get_db()
         cursor = conn.cursor()
 
         # 教員番号とパスワードを確認

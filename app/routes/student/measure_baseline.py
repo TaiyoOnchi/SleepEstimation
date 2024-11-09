@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, session, flash, redirect, url_for
-from app.utils import handle_authenticated_user, generate_token, get_db_connection  # get_db_connectionをインポート
+from flask import Blueprint, render_template, session, flash, redirect, url_for,current_app
+from app.utils import handle_authenticated_user, generate_token 
 
 measure_baseline_bp = Blueprint('measure_baseline', __name__)
 
@@ -17,7 +17,7 @@ def measure_baseline():
     student_number = student_info.get('student_number')
 
     # データベース接続と重複確認
-    conn = get_db_connection()
+    conn = current_app.get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM students WHERE student_number = ?', (student_number,))
     existing_user = cursor.fetchone()

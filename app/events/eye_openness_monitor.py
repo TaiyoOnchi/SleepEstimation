@@ -1,7 +1,7 @@
 from flask_login import current_user, login_required
+from flask import current_app
 from app import socketio
 from app.eye_openness import decode_image, process_image, save_eye_openness
-from app.utils.database import get_db_connection
 from flask_socketio import join_room  # join_room をインポート
 
 # 開眼率の低下を監視するリストを初期化
@@ -30,7 +30,7 @@ def monitor_eye_openness(image_data):  # 開眼率測定
         return
     
     # データベースから基準値を取得
-    conn = get_db_connection()
+    conn = current_app.get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT right_eye_baseline, left_eye_baseline FROM students WHERE student_number = ?', (student_number,))
     user_data = cursor.fetchone()

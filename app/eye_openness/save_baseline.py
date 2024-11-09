@@ -2,10 +2,10 @@ import sqlite3
 import cv2 as cv
 import base64
 from werkzeug.security import generate_password_hash
-from app.utils.database import get_db_connection
+from flask import current_app
 
 def save_baseline_to_database(best_frame, eye_openness, student_info):
-    conn = get_db_connection()
+    conn = current_app.get_db()
     cursor = conn.cursor()
 
     _, buffer = cv.imencode('.jpg', best_frame)

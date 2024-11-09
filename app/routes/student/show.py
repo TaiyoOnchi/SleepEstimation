@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request
+from flask import Blueprint, render_template, flash, redirect, url_for, request,current_app
 from flask_login import login_required, current_user
-from app.utils import get_db_connection
+
 
 show_bp = Blueprint('show', __name__)
 
@@ -11,7 +11,7 @@ def show(student_number):
         flash('他の学生の情報にはアクセスできません。')
         return redirect(url_for('student.dashboard'))
 
-    conn = get_db_connection()
+    conn = current_app.get_db()
     cursor = conn.cursor()
     cursor.execute(''' 
         SELECT student_number, last_name, first_name, kana_last_name, kana_first_name, 
