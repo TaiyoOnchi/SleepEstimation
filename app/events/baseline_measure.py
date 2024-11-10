@@ -44,12 +44,19 @@ def measure_baseline_eye_openness(data):
                 max_sum_openness = eye_openness
                 best_frame = frame
 
-    if max_sum_openness and max_sum_openness['eye_right'] >= 0.2 and max_sum_openness['eye_left'] >= 0.2:
-        save_baseline_to_database(best_frame, max_sum_openness, student_info)
-        if 'student_info' in session:
-            session.pop('student_info', None)
-        # 特定のクライアント（例えばstudent_infoを持つクライアント）に送信
-        socketio.emit('measurement_complete', {'message': '新規登録されました。ログイン画面からログインしてください', 'redirect_url': url_for('app.student.login.login')}, room=token)
-    else:
-        message = '目の開眼率が低すぎるため、再測定します' if max_sum_openness else '有効な開眼率が検出されませんでした。再測定します'
-        socketio.emit('measurement_complete', {'message': message, 'redirect_url': url_for('app.student.measure_baseline.measure_baseline')}, room=token)
+    if max_sum_openness:
+        print(f"左目開眼率: {max_sum_openness['eye_left']}%, 右目開眼率: {max_sum_openness['eye_right']}%")
+        if max_sum_openness['eye_right'] >= 0.1 and max_sum_openness['eye_left'] >= 0.1:
+            # 小数点第一位で丸める
+            eye_right_rounded = round(max_sum_openness['eye_right'], 3)
+            eye_left_rounded = round(max_sum_openness['eye_left'], 3)
+            # 丸めた値をデータベースに保存
+            save_baseline_to_database(best_frame, {'eye_right': eye_right_rounded, 'eye_left': eye_left_rounded}, student_info)
+            
+            if 'student_info' in session:
+                session.pop('student_info', None)
+            # 特定のクライアント（例えばstudent_infoを持つクライアント）に送信
+            socketio.emit('measurement_complete', {'message': '新規登録されました。ログイン画面からログインしてください', 'redirect_url': url_for('app.student.login.login')}, room=token)
+        else:
+            message = '目の開眼率が低すぎるため、再測定します' if max_sum_openness else '有効な開眼率が検出されませんでした。再測定します'
+            socketio.emit('measurement_complete', {'message': message, 'redirect_url': url_for('app.student.measure_baseline.measure_baseline')}, room=token)

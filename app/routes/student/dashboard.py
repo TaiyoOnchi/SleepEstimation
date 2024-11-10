@@ -5,7 +5,6 @@ from app.utils import student_required
 dashboard_bp = Blueprint('dashboard', __name__)
 
 @dashboard_bp.route('/dashboard')
-@login_required
 @student_required
 def dashboard():
-    return redirect(url_for('student.login'))
+    return render_template('student/dashboard.html')

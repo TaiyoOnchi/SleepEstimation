@@ -2,7 +2,7 @@ from flask_login import current_user, login_required
 from flask import current_app
 from app import socketio
 from app.eye_openness import decode_image, process_image, save_eye_openness
-from flask_socketio import join_room  # join_room をインポート
+from flask_socketio import join_room, leave_room  # join_room をインポート
 
 # 開眼率の低下を監視するリストを初期化
 low_eye_openness_count = {}
@@ -16,6 +16,13 @@ def connect():
     # ユーザーを student_number の部屋に参加させる
     student_number = current_user.student_number
     join_room(student_number)  # join_room を直接呼び出し
+    
+@socketio.on('disconnect')
+@login_required
+def handle_disconnect():
+    student_number = current_user.student_number
+    leave_room(student_number)  # 部屋から退出
+    print(f"{student_number} は部屋を退出しました。")
 
 
 @socketio.on('monitor_eye_openness')
@@ -34,7 +41,7 @@ def monitor_eye_openness(image_data):  # 開眼率測定
     cursor = conn.cursor()
     cursor.execute('SELECT right_eye_baseline, left_eye_baseline FROM students WHERE student_number = ?', (student_number,))
     user_data = cursor.fetchone()
-    conn.close()
+
     
     if not user_data:
         return
@@ -45,7 +52,13 @@ def monitor_eye_openness(image_data):  # 開眼率測定
     if eye_openness: 
         right_eye_ratio = (eye_openness['eye_right'] / right_eye_baseline) * 100
         left_eye_ratio = (eye_openness['eye_left'] / left_eye_baseline) * 100
-        save_eye_openness(student_number, right_eye_ratio, left_eye_ratio)
+        
+        # 小数点以下を切り捨てる
+        eye_right_rounded = int(right_eye_ratio)
+        eye_left_rounded = int(left_eye_ratio)
+        print(f"左目開眼率: {eye_left_rounded}%, 右目開眼率: {eye_right_rounded}%")
+        
+        save_eye_openness(conn,student_number, eye_right_rounded, eye_left_rounded)
 
         # 両目の平均開眼率を計算
         avg_eye_openness = (right_eye_ratio + left_eye_ratio) / 2
@@ -65,7 +78,5 @@ def monitor_eye_openness(image_data):  # 開眼率測定
         if len(low_eye_openness_count[student_number]) >= 3:
             socketio.emit('low_eye_openness_alert', {'message': '開眼率が低下しています！姿勢を正してください。'}, room=student_number)
             low_eye_openness_count[student_number] = []  # カウンターをリセット
-
-        print(f"右目開眼率: {right_eye_ratio}%, 左目開眼率: {left_eye_ratio}%")
     else:
         print("開眼率取得失敗")

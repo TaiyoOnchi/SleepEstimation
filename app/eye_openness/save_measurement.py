@@ -1,8 +1,7 @@
 from flask import current_app
 from datetime import datetime
 
-def save_eye_openness(student_number, right_eye_openness, left_eye_openness):
-    conn = current_app.get_db()
+def save_eye_openness(conn ,student_number, right_eye_openness, left_eye_openness):
     cursor = conn.cursor()
     
     # 現在時刻を取得

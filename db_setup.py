@@ -28,8 +28,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_id INTEGER NOT NULL,
             timestamp DATETIME,
-            right_eye_openness REAL,
-            left_eye_openness REAL,
+            right_eye_openness INTEGER,
+            left_eye_openness INTEGER,
             FOREIGN KEY (student_id) REFERENCES students(id)
         )
     ''')

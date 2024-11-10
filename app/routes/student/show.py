@@ -9,7 +9,7 @@ show_bp = Blueprint('show', __name__)
 def show(student_number):
     if current_user.role == 'student' and current_user.student_number != student_number:
         flash('他の学生の情報にはアクセスできません。')
-        return redirect(url_for('student.dashboard'))
+        return redirect(url_for('app.student.dashboard.dashboard'))
 
     conn = current_app.get_db()
     cursor = conn.cursor()
@@ -36,6 +36,6 @@ def show(student_number):
             'right_eye_baseline': student[8],
             'left_eye_baseline': student[9]
         }
-        return render_template('student/student_profile.html', student=student_data)
+        return render_template('student/show.html', student=student_data)
     else:
         return "学生が見つかりません", 404
