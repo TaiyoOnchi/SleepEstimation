@@ -53,7 +53,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             teacher_id INTEGER NOT NULL,
             subject_name TEXT NOT NULL,
-            default_room TEXT NOT NULL,
+            default_classroom TEXT NOT NULL,
             default_day_of_week TEXT NOT NULL,
             default_period INTEGER NOT NULL,
             max_eor_value INTEGER NOT NULL,
@@ -66,10 +66,10 @@ def init_db():
         CREATE TABLE IF NOT EXISTS subject_counts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             subject_id INTEGER NOT NULL,
-            room TEXT NOT NULL,
+            classroom TEXT NOT NULL,
             day_of_week TEXT NOT NULL,
             period INTEGER NOT NULL,
-            start_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+            start_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
             end_time DATETIME DEFAULT CURRENT_TIMESTAMP,
             is_active BOOLEAN NOT NULL,
             FOREIGN KEY (subject_id) REFERENCES subjects (id)

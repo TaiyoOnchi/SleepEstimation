@@ -16,14 +16,14 @@
     {% endwith %}
 
     <h2>講義情報</h2>
-    <p><a href="{{ url_for('app.teacher.lecture.create') }}">新しい講義の作成</a></p>
+    <p><a href="{{ url_for('app.teacher.lecture.new') }}">新しい講義の作成</a></p>
     
     <!-- 登録済み講義のリスト -->
     <ul>
         {% for subject in subjects %}
             <li>
-                {{ subject.subject_name }} - {{ subject.default_room }} ({{ subject.default_day_of_week }} 第{{ subject.default_period }}限)
-                <a href="{{ url_for('app.teacher.lecture.view', subject_id=subject.id) }}">詳細</a>
+                {{ subject.subject_name }} - {{ subject.default_classroom }} ({{ subject.default_day_of_week }} 第{{ subject.default_period }}限)
+                <a href="{{ url_for('app.teacher.lecture.show', subject_id=subject.id) }}">詳細</a>
             </li>
         {% endfor %}
     </ul>

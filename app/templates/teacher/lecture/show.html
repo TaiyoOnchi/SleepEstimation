@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ subject.subject_name }} の詳細</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ subject.subject_name }} の詳細</h1>
+    <form id="start-lecture-form" action="{{ url_for('app.teacher.lecture.start', subject_id=subject.id) }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="modify_schedule" id="modify_schedule" value="false">
+        <button type="button" onclick="confirmLectureStart()">講義を開始</button>
+    </form>
+
+    <script>
+        function confirmLectureStart() {
+            if (confirm("デフォルトの曜日と時限で講義を開始しますか？")) {
+                document.getElementById("modify_schedule").value = "false";
+            } else {
+                window.location.href = "{{ url_for('app.teacher.lecture.start', subject_id=subject.id) }}";
+                return;
+            }
+            document.getElementById("start-lecture-form").submit();
+        }
+    </script>
+
+    <!-- 講義回数リスト -->
+    <h2>講義回数</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>講義回数ID</th>
+                <th>曜日</th>
+                <th>時限</th>
+                <th>教室</th>
+                <th>開始時刻</th>
+                <th>終了時刻</th>
+                <th>状態</th>
+                <th>詳細</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in lecture_sessions %}
+            <tr>
+                <td>{{ session.id }}</td>
+                <td>{{ session.day_of_week }}</td>
+                <td>第{{ session.period }}限</td>
+                <td>{{ session.classroom }}</td>
+                <td>{{ session.start_time }}</td>
+                <td>{{ session.end_time }}</td>
+                <td>{{ 'アクティブ' if session.is_active else '非アクティブ' }}</td>
+                <td>
+                    <a href="{{ url_for('app.teacher.lecture.session', session_id=session.id) }}">詳細を見る</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p><a href="{{ url_for('app.teacher.dashboard.dashboard') }}">ダッシュボードに戻る</a></p>
+</body>
+</html>

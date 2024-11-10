@@ -1,4 +1,3 @@
-# yourapp/db_utils.py
 from flask import current_app, g
 import sqlite3
 from config import Config

@@ -1,9 +1,12 @@
 from functools import wraps
 from flask import redirect, url_for, flash
 from flask_login import current_user
+from flask_login import login_required
+
 
 def student_required(f):
     @wraps(f)
+    @login_required
     def decorated_function(*args, **kwargs):
         if current_user.role != 'student':
             flash("生徒専用ページです。")
@@ -13,6 +16,7 @@ def student_required(f):
     return decorated_function
 
 def teacher_required(f):
+    @login_required
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_user.role != 'teacher':

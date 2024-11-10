@@ -12,7 +12,7 @@ def dashboard():
 
     conn = current_app.get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM subjects WHERE teacher_id = ?", (current_user.id))
+    cursor.execute("SELECT * FROM subjects WHERE teacher_id = ?", (current_user.id,))
     subjects = cursor.fetchall()
 
     return render_template('teacher/dashboard.html', subjects=subjects)

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>講義回詳細</title>
+</head>
+<body>
+    <h1>講義回詳細</h1>
+
+    <h2>{{ lecture_session.day_of_week }} 第{{ lecture_session.period }}限 - {{ lecture_session.classroom }}</h2>
+    <p>開始時刻: {{ lecture_session.start_time }}</p>
+    <p>終了時刻: {{ lecture_session.end_time }}</p>
+
+    <h3>参加学生</h3>
+    <table border="1">
+        <tr>
+            <th>学生ID</th>
+            <th>氏名</th>
+            <th>出席時刻</th>
+            <th>退席時刻</th>
+            <th>注意回数</th>
+            <th>警告回数</th>
+        </tr>
+        {% for student in student_participations %}
+        <tr>
+            <td>{{ student.id }}</td>
+            <td>{{ student.last_name }} {{ student.first_name }}</td>
+            <td>{{ student.attendance_time }}</td>
+            <td>{{ student.exit_time }}</td>
+            <td>{{ student.attention_count }}</td>
+            <td>{{ student.warning_count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p><a href="{{ url_for('app.teacher.dashboard.dashboard') }}">ダッシュボードに戻る</a></p>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>新しい講義の作成</title>
+</head>
+<body>
+    <h1>新しい講義の作成</h1>
+    
+    <form method="POST" action="{{ url_for('app.teacher.lecture.create') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="subject_name">講義名:</label>
+        <input type="text" name="subject_name" id="subject_name" required><br>
+        
+        <label for="default_classroom">教室:</label>
+        <input type="text" name="default_classroom" id="default_classroom" required><br>
+        
+        <label for="default_day_of_week">曜日:</label>
+        <select name="default_day_of_week" id="default_day_of_week">
+            <option value="月">月</option>
+            <option value="火">火</option>
+            <option value="水">水</option>
+            <option value="木">木</option>
+            <option value="金">金</option>
+        </select><br>
+        
+        <label for="default_period">時限:</label>
+        <input type="number" name="default_period" id="default_period" min="1" max="6" required><br>
+        
+        <label for="max_eor_value">最大開眼率:</label>
+        <input type="number" name="max_eor_value" id="max_eor_value" min="0" max="100" required><br>
+        
+        <button type="submit">作成</button>
+    </form>
+    
+    <p><a href="{{ url_for('app.teacher.dashboard.dashboard') }}">戻る</a></p>
+</body>
+</html>

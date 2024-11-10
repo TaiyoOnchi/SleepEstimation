@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>スケジュールの変更</title>
+</head>
+<body>
+    <h1>スケジュールの変更</h1>
+    <form action="{{ url_for('app.teacher.lecture.start', subject_id=subject_id) }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label for="day_of_week">曜日を選択:</label>
+        <select name="day_of_week" id="day_of_week" required>
+            <option value="月" {% if default_day_of_week == '月' %}selected{% endif %}>月曜日</option>
+            <option value="火" {% if default_day_of_week == '火' %}selected{% endif %}>火曜日</option>
+            <option value="水" {% if default_day_of_week == '水' %}selected{% endif %}>水曜日</option>
+            <option value="木" {% if default_day_of_week == '木' %}selected{% endif %}>木曜日</option>
+            <option value="金" {% if default_day_of_week == '金' %}selected{% endif %}>金曜日</option>
+        </select>
+
+        <label for="period">時限を選択:</label>
+        <input type="number" name="period" id="period" min="1" max="6" value="{{ default_period }}" required>
+
+        <label for="classroom">教室:</label>
+        <input type="text" name="classroom" id="classroom" value="{{ default_classroom }}" required>
+
+        <button type="submit">講義を開始</button>
+    </form>
+</body>
+</html>
