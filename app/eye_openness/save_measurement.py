@@ -1,13 +1,17 @@
-import sqlite3
 from flask import current_app
+from datetime import datetime
 
 def save_eye_openness(student_number, right_eye_openness, left_eye_openness):
     conn = current_app.get_db()
     cursor = conn.cursor()
+    
+    # 現在時刻を取得
+    time = datetime.now()
+    
     cursor.execute('''
-        INSERT INTO eye_openness (student_id, right_eye_openness, left_eye_openness)
-        SELECT id, ?, ? FROM students WHERE student_number = ?
-    ''', (right_eye_openness, left_eye_openness, student_number))
+        INSERT INTO eye_openness (student_id, right_eye_openness, left_eye_openness,timestamp)
+        SELECT id, ?, ?, ? FROM students WHERE student_number = ?
+    ''', (right_eye_openness, left_eye_openness,time, student_number))
     cursor.execute('''
         DELETE FROM eye_openness 
         WHERE id NOT IN (

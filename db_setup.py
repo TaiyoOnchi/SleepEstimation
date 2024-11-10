@@ -27,7 +27,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS eye_openness (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_id INTEGER NOT NULL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            timestamp DATETIME,
             right_eye_openness REAL,
             left_eye_openness REAL,
             FOREIGN KEY (student_id) REFERENCES students(id)
@@ -56,7 +56,7 @@ def init_db():
             default_classroom TEXT NOT NULL,
             default_day_of_week TEXT NOT NULL,
             default_period INTEGER NOT NULL,
-            max_eor_value INTEGER NOT NULL,
+            ero_threshold INTEGER NOT NULL,
             FOREIGN KEY (teacher_id) REFERENCES teachers (id)
         )
     ''')
@@ -69,8 +69,8 @@ def init_db():
             classroom TEXT NOT NULL,
             day_of_week TEXT NOT NULL,
             period INTEGER NOT NULL,
-            start_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            end_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+            start_time DATETIME NOT NULL,
+            end_time DATETIME,
             is_active BOOLEAN NOT NULL,
             FOREIGN KEY (subject_id) REFERENCES subjects (id)
         )
@@ -117,7 +117,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_participation_id INTEGER NOT NULL,
             attention_count INTEGER,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            timestamp DATETIME,
             FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
         )
     ''')
@@ -127,7 +127,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS warnings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_participation_id INTEGER NOT NULL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            timestamp DATETIME,
             reason TEXT,
             FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
         )

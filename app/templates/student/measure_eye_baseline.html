@@ -107,6 +107,11 @@
             }, 1000);
         };
         
+        // クライアント側のJavaScriptでの例
+        socket.emit('measure_baseline_join', {token: token});
+
+
+
 
         // 測定完了通知
         socket.on('measurement_complete', function(data) {

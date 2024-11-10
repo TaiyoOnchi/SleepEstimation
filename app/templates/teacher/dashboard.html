@@ -2,9 +2,22 @@
 <html>
 <head>
     <title>教員ダッシュボード</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; text-align: left; }
+    </style>
+    <script>
+        function confirmEndSession(sessionId) {
+            if (confirm("本当にこの講義を終了しますか？")) {
+                document.getElementById("end-session-form-" + sessionId).submit();
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>教員ダッシュボード</h1>
+
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul>
@@ -15,19 +28,113 @@
         {% endif %}
     {% endwith %}
 
+    <h2>開講中の講義</h2>
+    {% if active_sessions|length == 0 %}
+        <p>開講中の講義はありません。</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>講義名</th>
+                    <th>教室</th>
+                    <th>曜日</th>
+                    <th>時限</th>
+                    <th>開始時刻</th>
+                    <th>状態</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in active_sessions %}
+                <tr>
+                    <td>{{ session.subject_name }}</td>
+                    <td>{{ session.classroom }}</td>
+                    <td>{{ session.day_of_week }}</td>
+                    <td>{{ session.period }}限</td>
+                    <td>{{ session.start_time }}</td>
+                    <td>{{ 'アクティブ' if session.is_active else '非アクティブ' }}</td>
+
+                    <td>
+                        <form id="end-session-form-{{ session.id }}" action="{{ url_for('app.teacher.lecture.end_session', session_id=session.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="button" onclick="confirmEndSession({{ session.id }})">講義を終了</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
     <h2>講義情報</h2>
     <p><a href="{{ url_for('app.teacher.lecture.new') }}">新しい講義の作成</a></p>
-    
+
     <!-- 登録済み講義のリスト -->
-    <ul>
-        {% for subject in subjects %}
-            <li>
-                {{ subject.subject_name }} - {{ subject.default_classroom }} ({{ subject.default_day_of_week }} 第{{ subject.default_period }}限)
-                <a href="{{ url_for('app.teacher.lecture.show', subject_id=subject.id) }}">詳細</a>
-            </li>
-        {% endfor %}
-    </ul>
-    
+    <table>
+        <thead>
+            <tr>
+                <th>講義名</th>
+                <th>教室</th>
+                <th>曜日</th>
+                <th>時限</th>
+                <th>開眼率の閾値</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subjects %}
+            <tr>
+                <td><a href="{{ url_for('app.teacher.lecture.show', subject_id=subject.id) }}">{{ subject.subject_name }}</a></td>
+                <td>{{ subject.default_classroom }}</td>
+                <td>{{ subject.default_day_of_week }}曜</td>
+                <td>{{ subject.default_period }}限</td>
+                <td>{{ subject.ero_threshold }}%</td>
+                <td>
+                    <form id="start-session-form" action="{{ url_for('app.teacher.lecture.start_session', subject_id=subject.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="modify_schedule" id="modify_schedule" value="false">
+                        <button type="button" onclick="showStartOptions()">講義を開始</button>
+                    </form>
+                
+                    <script>
+                        function showStartOptions() {
+                            const startOptions = document.createElement('div');
+                            startOptions.style.position = 'fixed';
+                            startOptions.style.top = '50%';
+                            startOptions.style.left = '50%';
+                            startOptions.style.transform = 'translate(-50%, -50%)';
+                            startOptions.style.padding = '20px';
+                            startOptions.style.backgroundColor = '#f9f9f9';
+                            startOptions.style.border = '1px solid #ddd';
+                            startOptions.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+                            startOptions.innerHTML = `
+                                <p>既存の教室、曜日、時限で講義を開始しますか？</p>
+                                <button onclick="startWithDefault()">開始</button>
+                                <button onclick="modifyAndStart()">変更して開始</button>
+                                <button onclick="cancelStart()">キャンセル</button>
+                            `;
+                            document.body.appendChild(startOptions);
+                        }
+
+                        function startWithDefault() {
+                            document.getElementById("modify_schedule").value = "false";
+                            document.getElementById("start-session-form").submit();
+                        }
+
+                        function modifyAndStart() {
+                            window.location.href = "{{ url_for('app.teacher.lecture.start_session', subject_id=subject.id) }}";
+                        }
+
+                        function cancelStart() {
+                            document.body.removeChild(document.body.lastChild);
+                        }
+                    </script>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
     <p><a href="{{ url_for('app.auth.logout') }}">ログアウト</a></p>
 </body>
 </html>
