@@ -90,14 +90,19 @@
                 <td>{{ subject.default_period }}限</td>
                 <td>{{ subject.ero_threshold }}%</td>
                 <td>
-                    <form id="start-session-form" action="{{ url_for('app.teacher.lecture.start_session', subject_id=subject.id) }}" method="post">
+                    <form id="start-session-form-{{ subject.id }}" action="{{ url_for('app.teacher.lecture.start_session', subject_id=subject.id) }}" method="post">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="modify_schedule" id="modify_schedule" value="false">
-                        <button type="button" onclick="showStartOptions()">講義を開始</button>
+                        
+                        {% if active_sessions|length > 0 %}
+                            <button type="button" disabled>講義を開始</button>
+                        {% else %}
+                            <button type="button" onclick="showStartOptions({{ subject.id }})">講義を開始</button>
+                        {% endif %}
                     </form>
-                
+        
                     <script>
-                        function showStartOptions() {
+                        function showStartOptions(subjectId) {
                             const startOptions = document.createElement('div');
                             startOptions.style.position = 'fixed';
                             startOptions.style.top = '50%';
@@ -109,22 +114,22 @@
                             startOptions.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
                             startOptions.innerHTML = `
                                 <p>既存の教室、曜日、時限で講義を開始しますか？</p>
-                                <button onclick="startWithDefault()">開始</button>
-                                <button onclick="modifyAndStart()">変更して開始</button>
+                                <button onclick="startWithDefault(${subjectId})">開始</button>
+                                <button onclick="modifyAndStart(${subjectId})">変更して開始</button>
                                 <button onclick="cancelStart()">キャンセル</button>
                             `;
                             document.body.appendChild(startOptions);
                         }
-
-                        function startWithDefault() {
+        
+                        function startWithDefault(subjectId) {
                             document.getElementById("modify_schedule").value = "false";
-                            document.getElementById("start-session-form").submit();
+                            document.getElementById("start-session-form-" + subjectId).submit();
                         }
-
-                        function modifyAndStart() {
-                            window.location.href = "{{ url_for('app.teacher.lecture.start_session', subject_id=subject.id) }}";
+        
+                        function modifyAndStart(subjectId) {
+                            window.location.href = "{{ url_for('app.teacher.lecture.start_session', subject_id=0) }}".replace("0", subjectId);
                         }
-
+        
                         function cancelStart() {
                             document.body.removeChild(document.body.lastChild);
                         }
@@ -133,6 +138,7 @@
             </tr>
             {% endfor %}
         </tbody>
+        
     </table>
 
     <p><a href="{{ url_for('app.auth.logout') }}">ログアウト</a></p>

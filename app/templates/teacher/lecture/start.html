@@ -6,7 +6,7 @@
 </head>
 <body>
     <h1>スケジュールの変更</h1>
-    <form action="{{ url_for('app.teacher.lecture.start', subject_id=subject_id) }}" method="post">
+    <form action="{{ url_for('app.teacher.lecture.start_session', subject_id=subject_id) }}" method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <label for="day_of_week">曜日を選択:</label>
