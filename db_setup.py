@@ -16,7 +16,7 @@ def init_db():
             kana_first_name TEXT NOT NULL,
             face_photo BLOB NOT NULL,
             gender BOOLEAN NOT NULL,
-            is_active BOOLEAN NOT NULL,
+            in_lecture BOOLEAN NOT NULL,
             right_eye_baseline REAL NOT NULL,
             left_eye_baseline REAL NOT NULL
         )
@@ -71,7 +71,7 @@ def init_db():
             period INTEGER NOT NULL,
             start_time DATETIME NOT NULL,
             end_time DATETIME,
-            is_active BOOLEAN NOT NULL,
+            lecture_active BOOLEAN NOT NULL,
             FOREIGN KEY (subject_id) REFERENCES subjects (id)
         )
     ''')

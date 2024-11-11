@@ -19,7 +19,6 @@ def login():
         # 教員番号とパスワードを確認
         cursor.execute('SELECT * FROM teachers WHERE teacher_number = ?', (teacher_number,))
         teacher_data = cursor.fetchone()
-        conn.close()
 
         if teacher_data:
             if check_password_hash(teacher_data[2], password):  # パスワードは3番目の要素

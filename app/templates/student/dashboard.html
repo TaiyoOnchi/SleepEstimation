@@ -1,21 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <title>ダッシュボード</title>
+    <meta charset="UTF-8">
+    <title>学生ダッシュボード</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Headings */
+        h1, h2 {
+            color: #333;
+        }
+
+        /* Messages */
+        .messages {
+            list-style-type: none;
+            padding: 0;
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 1rem;
+        }
+
+        /* Student Info */
+        .student-info {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .student-info p {
+            margin: 0.5rem 0;
+        }
+
+        .student-info strong {
+            color: #555;
+        }
+
+        /* Navigation Links */
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .links a {
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .links a:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h1>ダッシュボード</h1>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    <p>{{ current_user.id }}</p>
-    <p><a href="{{ url_for('app.student.lecture.lecture') }}">講義情報</a></p>
-    <p><a href="{{ url_for('app.auth.logout') }}">ログアウト</a></p>
+    <div class="container">
+        <h1>学生ダッシュボード</h1>
+        <!-- メッセージ表示 -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        <!-- 学生情報 -->
+        <div class="student-info">
+            <h2>学生情報</h2>
+            <p><strong>学籍番号:</strong> {{ current_user.student_number }}</p>
+            <p><strong>氏名:</strong> {{ current_user.last_name }} {{ current_user.first_name }}</p>
+            <p><strong>性別:</strong> {{ '女性' if current_user.gender else '男性' }}</p>
+        </div>
+        <!-- ナビゲーションリンク -->
+        <div class="links">
+            <a href="{{ url_for('app.student.lecture.lecture') }}">講義に参加</a>
+            <a href="{{ url_for('app.auth.logout') }}">ログアウト</a>
+        </div>
+    </div>
 </body>
 </html>

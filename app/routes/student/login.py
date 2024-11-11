@@ -17,18 +17,18 @@ def login():
 
         conn = current_app.get_db()
         cursor = conn.cursor()
-        cursor.execute('SELECT id, student_number, password, last_name, first_name FROM students WHERE student_number = ?', (student_number,))
+        cursor.execute('SELECT id, student_number, password, last_name, first_name, gender, in_lecture, right_eye_baseline, left_eye_baseline FROM students WHERE student_number = ?', (student_number,))
         user_data = cursor.fetchone()
         
 
         if user_data:
-            student_id, student_number, hashed_password, last_name, first_name = user_data
+            student_id, student_number, hashed_password, last_name, first_name, gender, in_lecture, right_eye_baseline, left_eye_baseline = user_data
             if check_password_hash(hashed_password, password):
-                student = Student(student_id, student_number, hashed_password, last_name, first_name)
+                student = Student(student_id, student_number, hashed_password, last_name, first_name, gender, in_lecture, right_eye_baseline, left_eye_baseline)
                 login_user(student)
                 session['role'] = 'student'
                 
-                return redirect(url_for('app.student.lecture.lecture'))
+                return redirect(url_for('app.student.dashboard.dashboard'))
             else:
               flash("学籍番号かパスワードが違います。再度ログインしてください")
               return redirect(url_for('app.student.login.login'))

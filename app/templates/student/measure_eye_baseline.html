@@ -8,41 +8,68 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin-top: 50px;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+        
         .container {
             max-width: 600px;
-            margin: 0 auto;
+            width: 100%;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
         .message {
-            font-size: 1.2em;
-            margin-bottom: 20px;
+            font-size: 1rem;
+            margin-bottom: 10px;
         }
-        .loading {
-            font-size: 1.5em;
-            color: #555;
-        }
-        #countdown {
-            font-size: 2em;
-            margin: 20px;
-            color: red;
-        }
+        
         #start-button {
-            padding: 10px 20px;
-            font-size: 1em;
+            padding: 8px 16px;
+            font-size: 0.9rem;
             cursor: pointer;
+        }
+        
+        #video {
+            display: block;
+            margin: 10px auto;
+            max-width: 80%;
+            height: auto;
+        }
+        
+        /* カウントダウン表示用のスペースを確保 */
+        #countdown {
+            font-size: 1.5rem;
+            color: red;
+            margin: 10px 0;
+            min-height: 1.5em; /* 固定の高さを設定 */
+        }
+        
+        /* 測定中のメッセージを完全に非表示に */
+        .loading {
+            display: none;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>開眼率基準値測定</h1>
+        <h2>開眼率基準値測定</h2>
         <p class="message">大きく目を開けて、カメラを見つめてください。</p>
         <button id="start-button">測定開始</button>
         <video id="video" width="640" height="480" autoplay></video>
-        <div id="countdown"></div>
-        <p class="loading" style="display: none;">測定中です...</p>
+        <div id="countdown"></div> <!-- カウントダウン表示スペース -->
+        <!-- 測定中メッセージは完全に非表示にする -->
     </div>
 
     <script>
@@ -67,8 +94,7 @@
         // 測定開始ボタンのクリックイベント
         document.getElementById('start-button').onclick = function() {
             this.disabled = true;
-            document.querySelector('.loading').style.display = 'block';
-        
+            
             let countdown = 3;
             const countdownElement = document.getElementById('countdown');
             countdownElement.innerText = countdown;

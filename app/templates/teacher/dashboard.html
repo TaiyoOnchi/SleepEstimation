@@ -52,7 +52,7 @@
                     <td>{{ session.day_of_week }}</td>
                     <td>{{ session.period }}限</td>
                     <td>{{ session.start_time }}</td>
-                    <td>{{ 'アクティブ' if session.is_active else '非アクティブ' }}</td>
+                    <td>{{ 'アクティブ' if session.lecture_active else '非アクティブ' }}</td>
 
                     <td>
                         <form id="end-session-form-{{ session.id }}" action="{{ url_for('app.teacher.lecture.end_session', session_id=session.id) }}" method="post">

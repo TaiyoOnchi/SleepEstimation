@@ -21,7 +21,6 @@ def measure_baseline():
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM students WHERE student_number = ?', (student_number,))
     existing_user = cursor.fetchone()
-    conn.close()
 
     if existing_user:
         flash('既に登録されている学籍番号です。ログインしてください。')

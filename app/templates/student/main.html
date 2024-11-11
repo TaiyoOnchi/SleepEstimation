@@ -1,20 +1,61 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>メインページ</title>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>メインページ</title>
+        <style>
+            html, body {
+                height: 100vh;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 14px;
+            }
+    
+            h1 {
+                margin: 10px 0;
+            }
+    
+            /* 講義情報を横並びにして間隔を狭める */
+            .lecture-info {
+                display: flex;
+                gap: 0; /* 各要素間のスペースをゼロに */
+            }
+    
+            .lecture-info p {
+                margin: 0;
+                padding: 0 5px; /* 各項目の左右に少しスペースを付ける */
+            }
+    
+            #video {
+                width: 100%;
+                height: auto;
+                max-width: 800px; /* 最大幅を800pxに設定 */
+                margin: 10px 0;
+            }
+    
+            .footer {
+                margin: 10px 0;
+            }
+        </style>
+    </head>
 <body>
     <h1>メインページ</h1>
     <h2>講義情報</h2>
-    <p>教室: {{ classroom }}</p>
-    <p>座席番号: {{ seat_number }}</p>
-    <p>時限: {{ period }}</p>
+    <div class="lecture-info">
+        <p>教室: {{ classroom }}</p>
+        <p>座席番号: {{ seat_number }}</p>
+        <p>時限: {{ period }}</p>
+    </div>
 
-    <h1>カメラ映像を表示中</h1>
-    <video id="video" width="640" height="480" autoplay muted></video>
+    <video id="video" autoplay muted></video>
 
+    <div class="footer">
+        <a href="{{ url_for('app.auth.logout') }}">ログアウト</a>
+    </div>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script>
         const socket = io();
@@ -72,6 +113,5 @@
 
 
     </script>
-    <a href="{{ url_for('app.auth.logout') }}">ログアウト</a>
 </body>
 </html>

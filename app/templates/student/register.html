@@ -1,4 +1,3 @@
-<!-- templates/student/register.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -19,29 +18,31 @@
     {% endwith %}
     <form method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
         <label for="student_number">学籍番号:</label>
-        <input type="text" id="student_number" name="student_number" required><br><br>
+        <input type="text" id="student_number" name="student_number" value="{{ student_info.get('student_number', '') }}" required><br><br>
 
-        <label for="password">パスワード:</label>
+        <label for="password">パスワード(6文字以上):</label>
         <input type="password" id="password" name="password" required><br><br>
 
         <label for="last_name">姓:</label>
-        <input type="text" id="last_name" name="last_name" required><br><br>
+        <input type="text" id="last_name" name="last_name" value="{{ student_info.get('last_name', '') }}" required><br><br>
 
         <label for="first_name">名:</label>
-        <input type="text" id="first_name" name="first_name" required><br><br>
+        <input type="text" id="first_name" name="first_name" value="{{ student_info.get('first_name', '') }}" required><br><br>
 
         <label for="kana_last_name">姓（カナ）:</label>
-        <input type="text" id="kana_last_name" name="kana_last_name" required><br><br>
+        <input type="text" id="kana_last_name" name="kana_last_name" value="{{ student_info.get('kana_last_name', '') }}" required><br><br>
 
         <label for="kana_first_name">名（カナ）:</label>
-        <input type="text" id="kana_first_name" name="kana_first_name" required><br><br>
+        <input type="text" id="kana_first_name" name="kana_first_name" value="{{ student_info.get('kana_first_name', '') }}" required><br><br>
 
         <label for="gender">性別:</label>
         <select id="gender" name="gender" required>
-            <option value="0">男性</option>
-            <option value="1">女性</option>
+            <option value="0" {% if student_info.get('gender') == '0' %}selected{% endif %}>男性</option>
+            <option value="1" {% if student_info.get('gender') == '1' %}selected{% endif %}>女性</option>
         </select><br><br>
+        
         <button type="submit">登録</button>
     </form>
     <p>すでにアカウントをお持ちの方は <a href="{{ url_for('app.student.login.login') }}">こちら</a> からログインしてください。</p>

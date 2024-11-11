@@ -14,7 +14,7 @@ def load_user(user_id):
 
     try:
         if role == 'student':
-            cursor.execute('SELECT id, student_number, password, last_name, first_name FROM students WHERE id = ?', (user_id,))
+            cursor.execute('SELECT id, student_number, password, last_name, first_name, gender, in_lecture, right_eye_baseline, left_eye_baseline FROM students WHERE id = ?', (user_id,))
             user_data = cursor.fetchone()
             if user_data:
                 return Student(*user_data)

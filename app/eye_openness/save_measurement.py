@@ -20,4 +20,3 @@ def save_eye_openness(conn ,student_number, right_eye_openness, left_eye_opennes
         ) AND student_id = (SELECT id FROM students WHERE student_number = ?)
     ''', (student_number, student_number))
     conn.commit()
-    conn.close()

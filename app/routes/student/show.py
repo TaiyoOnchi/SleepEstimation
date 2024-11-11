@@ -15,13 +15,12 @@ def show(student_number):
     cursor = conn.cursor()
     cursor.execute(''' 
         SELECT student_number, last_name, first_name, kana_last_name, kana_first_name, 
-               face_photo, gender, is_active, right_eye_baseline, left_eye_baseline 
+               face_photo, gender, in_lecture, right_eye_baseline, left_eye_baseline 
         FROM students 
         WHERE student_number = ?
     ''', (student_number,))
     
     student = cursor.fetchone()
-    conn.close()
 
     if student:
         student_data = {
@@ -32,7 +31,7 @@ def show(student_number):
             'kana_first_name': student[4],
             'face_photo': student[5],
             'gender': student[6],
-            'is_active': student[7],
+            'in_lecture': student[7],
             'right_eye_baseline': student[8],
             'left_eye_baseline': student[9]
         }

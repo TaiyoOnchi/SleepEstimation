@@ -12,7 +12,7 @@ def save_baseline_to_database(best_frame, eye_openness, student_info):
     face_photo = base64.b64encode(buffer).decode('utf-8')
 
     cursor.execute('''
-        INSERT INTO students (student_number, password, last_name, first_name, kana_last_name, kana_first_name, gender, right_eye_baseline, left_eye_baseline, face_photo, is_active)
+        INSERT INTO students (student_number, password, last_name, first_name, kana_last_name, kana_first_name, gender, right_eye_baseline, left_eye_baseline, face_photo, in_lecture)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         student_info['student_number'],
@@ -28,4 +28,3 @@ def save_baseline_to_database(best_frame, eye_openness, student_info):
         1
     ))
     conn.commit()
-    conn.close()
