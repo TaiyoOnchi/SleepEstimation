@@ -13,7 +13,7 @@
         <p>名前: {{ student.last_name }} {{ student.first_name }}</p>
         <p>カナ: {{ student.kana_last_name }} {{ student.kana_first_name }}</p>
         <p>性別: {{ '女性' if student.gender else '男性' }}</p>
-        <p>ステータス: {{ 'アクティブ' if student.is_active else '非アクティブ' }}</p>
+        <p>ステータス: {{ 'アクティブ' if student.in_lecture else '非アクティブ' }}</p>
         <p>右目の基準値: {{ student.right_eye_baseline }}</p>
         <p>左目の基準値: {{ student.left_eye_baseline }}</p>
 

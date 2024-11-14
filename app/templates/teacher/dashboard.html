@@ -7,13 +7,6 @@
         th, td { border: 1px solid #ddd; padding: 8px; }
         th { background-color: #f2f2f2; text-align: left; }
     </style>
-    <script>
-        function confirmEndSession(sessionId) {
-            if (confirm("本当にこの講義を終了しますか？")) {
-                document.getElementById("end-session-form-" + sessionId).submit();
-            }
-        }
-    </script>
 </head>
 <body>
     <h1>教員ダッシュボード</h1>
@@ -102,6 +95,12 @@
                     </form>
         
                     <script>
+                        function confirmEndSession(sessionId) {
+                            if (confirm("本当にこの講義を終了しますか？")) {
+                                document.getElementById("end-session-form-" + sessionId).submit();
+                            }
+                        }
+
                         function showStartOptions(subjectId) {
                             const startOptions = document.createElement('div');
                             startOptions.style.position = 'fixed';
@@ -120,6 +119,7 @@
                             `;
                             document.body.appendChild(startOptions);
                         }
+                        
         
                         function startWithDefault(subjectId) {
                             document.getElementById("modify_schedule").value = "false";

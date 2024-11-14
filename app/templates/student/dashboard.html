@@ -2,101 +2,58 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>学生ダッシュボード</title>
-    <style>
-        /* Global Styles */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        /* Headings */
-        h1, h2 {
-            color: #333;
-        }
-
-        /* Messages */
-        .messages {
-            list-style-type: none;
-            padding: 0;
-            color: #721c24;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            padding: 1rem;
-        }
-
-        /* Student Info */
-        .student-info {
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .student-info p {
-            margin: 0.5rem 0;
-        }
-
-        .student-info strong {
-            color: #555;
-        }
-
-        /* Navigation Links */
-        .links {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        .links a {
-            background-color: #007bff;
-            color: #fff;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-        }
-
-        .links a:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <h1>学生ダッシュボード</h1>
-        <!-- メッセージ表示 -->
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-        <!-- 学生情報 -->
-        <div class="student-info">
-            <h2>学生情報</h2>
-            <p><strong>学籍番号:</strong> {{ current_user.student_number }}</p>
-            <p><strong>氏名:</strong> {{ current_user.last_name }} {{ current_user.first_name }}</p>
-            <p><strong>性別:</strong> {{ '女性' if current_user.gender else '男性' }}</p>
-        </div>
-        <!-- ナビゲーションリンク -->
-        <div class="links">
-            <a href="{{ url_for('app.student.lecture.lecture') }}">講義に参加</a>
-            <a href="{{ url_for('app.auth.logout') }}">ログアウト</a>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">学生ダッシュボード</h1>
+            
+            <!-- メッセージ表示 -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="mb-6">
+                        {% for message in messages %}
+                            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                                <span class="block sm:inline">{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- 学生情報 -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">学生情報</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <span class="text-gray-600 font-medium w-24">学籍番号:</span>
+                        <span class="text-gray-800">{{ current_user.student_number }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-600 font-medium w-24">氏名:</span>
+                        <span class="text-gray-800">{{ current_user.last_name }} {{ current_user.first_name }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-600 font-medium w-24">性別:</span>
+                        <span class="text-gray-800">{{ '女性' if current_user.gender else '男性' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ナビゲーションリンク -->
+            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+                <a href="{{ url_for('app.student.lecture.lecture') }}" 
+                   class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    講義に参加
+                </a>
+                <a href="{{ url_for('app.auth.logout') }}" 
+                   class="inline-flex items-center justify-center px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                    ログアウト
+                </a>
+            </div>
         </div>
     </div>
 </body>

@@ -42,8 +42,6 @@ def process_image(frame):
             for eye, openness in eye_openness.items()  # eye → 'eye_right' , 'eye_left'、openness → 開眼率(0.2など)
         }
 
-
-
         return frame, corrected_eye_openness
     else:
         # 顔が検出されなかった場合
@@ -113,10 +111,9 @@ def calculate_perpendicular_point(eye_head, eye_tail, lid_point):
 # ピッチ角に基づいて目の開眼率を補正する関数
 def apply_pitch_correction(eye_openness, pitch_angle):
     # ピッチ角が前傾している場合、開眼率を調整（角度が大きいほど補正）
-    n=50
+    n=25
     correction_factor = 1 + abs(abs(pitch_angle)-90) / n  # 上を向くと90↓、下を向くと90↑(補正変更可)
     # 開眼率を補正した値で返す
     corrected_eye_openness = eye_openness * correction_factor
     print(corrected_eye_openness ,eye_openness ,correction_factor)
     return corrected_eye_openness
-
