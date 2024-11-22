@@ -62,35 +62,58 @@ def calculate_pitch_angle(landmarks, img):
 
 
 def calculate_eye_openness(landmarks, img):
-    # 左右の目の内側のランドマークを取得して距離を計算
-    eye_inner_left = np.array([landmarks[133].x * img.shape[1], landmarks[133].y * img.shape[0]])
-    eye_inner_right = np.array([landmarks[362].x * img.shape[1], landmarks[362].y * img.shape[0]])
-    eye_distance = np.linalg.norm(eye_inner_left - eye_inner_right)
-
-    # 各目のランドマーク位置を取得
-    landmark_dict = {'eye_right': [], 'eye_left': []}
-    for eye in landmark_index_dict:
-        for i in landmark_index_dict[eye]:
-            res_x = int(landmarks[i].x * img.shape[1])
-            res_y = int(landmarks[i].y * img.shape[0])
-            landmark_dict[eye].append((res_x, res_y))
-
+    # 結果を格納する辞書
     eye_openness_dict = {}
-    # 右目と左目の開眼率をそれぞれ計算
+
+    # 左目と右目それぞれに対して計算
     for eye in ['eye_right', 'eye_left']:
-        eye_head = landmark_dict[eye][0]
-        eye_tail = landmark_dict[eye][1]
-        total_eye_openness = 0
-        # まぶたの上と下のランドマークで開眼度を測定
-        for lid_index in [2, 3]:
-            lid_point = landmark_dict[eye][lid_index]
+        # 目頭と目じりのランドマークインデックス
+        if eye == 'eye_right':
+            head_idx, tail_idx = 33, 133  # 右目の目頭と目じり
+            upper_indices = [157, 158, 159, 160]  # 上のランドマーク候補
+            lower_indices = [145, 144, 153, 154]  # 下のランドマーク候補
+        else:
+            head_idx, tail_idx = 263, 362  # 左目の目頭と目じり
+            upper_indices = [386, 385, 384, 387]  # 上のランドマーク候補
+            lower_indices = [374, 373, 380, 381]  # 下のランドマーク候補
+
+        # 目頭と目じりの座標を取得
+        eye_head = np.array([landmarks[head_idx].x * img.shape[1], landmarks[head_idx].y * img.shape[0]])
+        eye_tail = np.array([landmarks[tail_idx].x * img.shape[1], landmarks[tail_idx].y * img.shape[0]])
+
+        # 上まぶた・下まぶたの最大距離を初期化
+        max_upper_distance = 0
+        max_lower_distance = 0
+
+        # 上まぶたのランドマークを処理
+        for idx in upper_indices:
+            lid_point = np.array([landmarks[idx].x * img.shape[1], landmarks[idx].y * img.shape[0]])
             perpendicular_point = calculate_perpendicular_point(eye_head, eye_tail, lid_point)
-            distance = np.linalg.norm(np.array(lid_point) - perpendicular_point)
-            total_eye_openness += distance
-        # 「目の間の距離」を基準に開眼率を正規化
+            distance = np.linalg.norm(lid_point - perpendicular_point)
+            print(f"Upper lid landmark {idx}: {lid_point}, Perpendicular: {perpendicular_point}, Distance: {distance}")
+            max_upper_distance = max(max_upper_distance, distance)
+        print(f"Max upper lid distance: {max_upper_distance}")
+
+        # 下まぶたのランドマークを処理
+        for idx in lower_indices:
+            lid_point = np.array([landmarks[idx].x * img.shape[1], landmarks[idx].y * img.shape[0]])
+            perpendicular_point = calculate_perpendicular_point(eye_head, eye_tail, lid_point)
+            distance = np.linalg.norm(lid_point - perpendicular_point)
+            print(f"Lower lid landmark {idx}: {lid_point}, Perpendicular: {perpendicular_point}, Distance: {distance}")
+            max_lower_distance = max(max_lower_distance, distance)
+        print(f"Max upper lid distance: {max_upper_distance}")
+
+        # 開眼度を計算（上まぶたと下まぶたの最大距離の和）
+        total_eye_openness = max_upper_distance + max_lower_distance
+
+        # 目の幅で正規化
+        eye_distance = np.linalg.norm(eye_tail - eye_head)
         eye_openness_dict[eye] = total_eye_openness / eye_distance
 
     return eye_openness_dict
+
+
+
 
 
 # 垂直投影点を計算する関数

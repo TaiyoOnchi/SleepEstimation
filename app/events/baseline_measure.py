@@ -45,7 +45,7 @@ def measure_baseline_eye_openness(data):
                 best_frame = frame
 
     if max_sum_openness:
-        print(f"左目開眼率: {max_sum_openness['eye_left']}%, 右目開眼率: {max_sum_openness['eye_right']}%")
+        print(f"左目開眼率: {max_sum_openness['eye_left']}, 右目開眼率: {max_sum_openness['eye_right']}")
         if max_sum_openness['eye_right'] >= 0.1 and max_sum_openness['eye_left'] >= 0.1:
             # 小数点第一位で丸める
             eye_right_rounded = round(max_sum_openness['eye_right'], 3)
