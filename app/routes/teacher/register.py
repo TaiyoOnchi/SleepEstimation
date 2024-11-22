@@ -2,11 +2,16 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user
 from app.models import Teacher
 from werkzeug.security import generate_password_hash
+from app.utils import handle_authenticated_user
 
 register_bp = Blueprint('register', __name__)
 
 @register_bp.route('/register', methods=['GET', 'POST'])
 def register():
+    redirect_response = handle_authenticated_user()
+    if redirect_response:
+        return redirect_response
+    
     if request.method == 'POST':
         # フォームデータを取得
         teacher_number = request.form['teacher_number']
@@ -19,7 +24,7 @@ def register():
         # パスワード強度チェック
         is_valid, message = is_strong_password(password)
         if not is_valid:
-            flash(message)
+            flash(message, "error")
             # 入力情報をsessionに保存
             session['teacher_info'] = {
                 'teacher_number': teacher_number,
@@ -42,7 +47,7 @@ def register():
         existing_teacher = cursor.fetchone()
 
         if existing_teacher:
-            flash("その教員番号は既に登録されています。")
+            flash("その教員番号は既に登録されています。", "error")
             # 入力情報をsessionに保存
             session['teacher_info'] = {
                 'teacher_number': teacher_number,
@@ -69,7 +74,9 @@ def register():
         session.pop('teacher_info', None)
         
         # 登録完了メッセージとユーザーのログイン処理
-        flash("教員が登録されました。")
+        flash("教員が登録されました。", "success")
+        if 'teacher_info' in session:
+            session.pop('teacher_info', None)
         teacher = Teacher(teacher_data[0], teacher_data[1], teacher_data[2], teacher_data[3], teacher_data[4])  # Teacherオブジェクトを作成
         session['role'] = 'teacher'
         login_user(teacher)

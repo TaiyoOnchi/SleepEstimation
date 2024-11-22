@@ -11,18 +11,11 @@
 <body>
     <h1>教員ダッシュボード</h1>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    {% include 'partials/flash_messages.html' %}
+
 
     <h2>開講中の講義</h2>
-    {% if active_sessions|length == 0 %}
+    {% if not active_session %}
         <p>開講中の講義はありません。</p>
     {% else %}
         <table>
@@ -34,27 +27,28 @@
                     <th>時限</th>
                     <th>開始時刻</th>
                     <th>状態</th>
+                    <th>コード</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody>
-                {% for session in active_sessions %}
                 <tr>
-                    <td>{{ session.subject_name }}</td>
-                    <td>{{ session.classroom }}</td>
-                    <td>{{ session.day_of_week }}</td>
-                    <td>{{ session.period }}限</td>
-                    <td>{{ session.start_time }}</td>
-                    <td>{{ 'アクティブ' if session.lecture_active else '非アクティブ' }}</td>
+                    <td>{{ active_session.subject_name }}</td>
+                    <td>{{ active_session.classroom }}</td>
+                    <td>{{ active_session.day_of_week }}</td>
+                    <td>{{ active_session.period }}限</td>
+                    <td>{{ active_session.start_time }}</td>
+                    <td>{{ '開講中' if active_session.lecture_active else '終了' }}</td>
+                    <td>{{ active_session.join_code }}</td>
 
                     <td>
-                        <form id="end-session-form-{{ session.id }}" action="{{ url_for('app.teacher.lecture.end_session', session_id=session.id) }}" method="post">
+                        <form id="end-session-form-{{ active_session.id }}" action="{{ url_for('app.teacher.lecture.end_session', session_id=active_session.id) }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="button" onclick="confirmEndSession({{ session.id }})">講義を終了</button>
+                            <button type="button" onclick="confirmEndSession({{ active_session.id }})">講義を終了</button>
                         </form>
                     </td>
                 </tr>
-                {% endfor %}
+                
             </tbody>
         </table>
     {% endif %}
@@ -87,7 +81,7 @@
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="modify_schedule" id="modify_schedule" value="false">
                         
-                        {% if active_sessions|length > 0 %}
+                        {% if active_session %}
                             <button type="button" disabled>講義を開始</button>
                         {% else %}
                             <button type="button" onclick="showStartOptions({{ subject.id }})">講義を開始</button>

@@ -9,7 +9,7 @@ def student_required(f):
     @login_required
     def decorated_function(*args, **kwargs):
         if current_user.role != 'student':
-            flash("生徒専用ページです。")
+            flash("生徒専用ページです。","error")
             return redirect(url_for("app.teacher.dashboard.dashboard"))  # 教員ダッシュボードにリダイレクト
 
         return f(*args, **kwargs)
@@ -20,7 +20,7 @@ def teacher_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_user.role != 'teacher':
-            flash("教員専用ページです。")
+            flash("教員専用ページです。","error")
             return redirect(url_for("app.student.dashboard.dashboard"))  # 生徒ダッシュボードにリダイレクト
 
         return f(*args, **kwargs)
@@ -29,7 +29,7 @@ def teacher_required(f):
 
 def handle_authenticated_user():
     if current_user.is_authenticated:
-        flash('既にログインしています。')
+        flash('既にログインしています。',"error")
         if current_user.role == 'student':
             return redirect(url_for('app.student.dashboard.dashboard'))
         else:

@@ -11,7 +11,7 @@ def measure_baseline():
 
     student_info = session.get('student_info')
     if not student_info:
-        flash('学籍番号や氏名を入力してください。')
+        flash('学籍番号や氏名を入力してください。',"error")
         return redirect(url_for('app.student.register.register'))
 
     student_number = student_info.get('student_number')
@@ -23,7 +23,7 @@ def measure_baseline():
     existing_user = cursor.fetchone()
 
     if existing_user:
-        flash('既に登録されている学籍番号です。ログインしてください。')
+        flash('既に登録されている学籍番号です。ログインしてください。',"error")
         return redirect(url_for('app.student.login.login'))
 
     token = generate_token({'student_info': student_info})

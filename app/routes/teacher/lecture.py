@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, redirect,current_app,session,flash
 from flask_login import login_required, current_user
 from app.utils import teacher_required
 from datetime import datetime
+import random
+import string
 
 
 lecture_bp = Blueprint('lecture', __name__)
@@ -42,6 +44,64 @@ def show(subject_id):
     return render_template('teacher/lecture/show.html', subject=subject, lecture_sessions=lecture_sessions)
 
 
+# 講義コード生成
+def generate_join_code():
+    return ''.join(random.choices(string.digits, k=4))
+
+@lecture_bp.route('/start/<int:subject_id>', methods=['GET', 'POST'])
+@teacher_required
+def start_session(subject_id):
+    conn = current_app.get_db()
+    cursor = conn.cursor()
+
+    # 既にアクティブな講義が存在するか確認
+    cursor.execute('SELECT subject_id FROM subject_counts WHERE lecture_active = 1 AND subject_id IN (SELECT id FROM subjects WHERE teacher_id = ?)', (current_user.id,))
+    active_lecture = cursor.fetchone()
+    if active_lecture:
+        flash("アクティブな講義が既に存在しています。終了してください。","error")
+        return redirect(url_for('app.teacher.lecture.show', subject_id=active_lecture['subject_id']))
+
+    # subjectsテーブルからデフォルトの曜日、時限、教室を取得
+    cursor.execute('''
+        SELECT default_day_of_week, default_period, default_classroom 
+        FROM subjects 
+        WHERE id = ?
+    ''', (subject_id,))
+    subject_defaults = cursor.fetchone()
+
+    if not subject_defaults:
+        return "指定された講義が見つかりません。", 404
+
+    default_day_of_week, default_period, default_classroom = subject_defaults
+
+    if request.method == 'POST':
+        new_day_of_week = request.form.get('day_of_week', default_day_of_week)
+        new_period = request.form.get('period', default_period)
+        new_classroom = request.form.get('classroom', default_classroom)
+        
+        # 現在時刻を取得
+        start_time = datetime.now()
+        
+        join_code = generate_join_code()
+
+        # 新しい講義回データを追加
+        cursor.execute('''
+            INSERT INTO subject_counts (subject_id, classroom, day_of_week, period, start_time, lecture_active, join_code)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (subject_id, new_classroom, new_day_of_week, new_period, start_time,True, join_code))
+        conn.commit()
+
+        flash('講義を開始しました', "success")
+        return redirect(url_for('app.teacher.lecture.show', subject_id=subject_id))
+
+    return render_template(
+        'teacher/lecture/start.html',
+        subject_id=subject_id,
+        default_day_of_week=default_day_of_week,
+        default_period=default_period,
+        default_classroom=default_classroom
+    )
+
 
 # 講義終了の処理
 @lecture_bp.route('/end/<int:session_id>', methods=['POST'])
@@ -63,10 +123,10 @@ def end_session(session_id):
     subject_id = subject['subject_id'] if subject else None
     
     if subject_id:
-        flash("講義を終了しました。")
+        flash("講義を終了しました。", "success")
         return redirect(url_for('app.teacher.lecture.show', subject_id=subject_id))
     else:
-        flash("講義が見つかりませんでした。")
+        flash("講義が見つかりませんでした。", "error")
         return redirect(url_for('app.teacher.dashboard.dashboard'))
 
 
@@ -96,7 +156,7 @@ def create():
     # 重複する講義名と曜日、教室、時限の確認
     cursor.execute('SELECT COUNT(*) FROM subjects WHERE subject_name = ?', (subject_name,))
     if cursor.fetchone()[0] > 0:
-        flash("同じ講義名が既に存在します。異なる名前を使用してください。")
+        flash("同じ講義名が既に存在します。異なる名前を使用してください。", "error")
         return redirect(url_for('app.teacher.lecture.new'))
 
     cursor.execute('''
@@ -104,7 +164,7 @@ def create():
         WHERE default_classroom = ? AND default_day_of_week = ? AND default_period = ?
     ''', (default_classroom, default_day_of_week, default_period))
     if cursor.fetchone()[0] > 0:
-        flash("指定された教室、曜日、時限の講義が既に存在します。")
+        flash("指定された教室、曜日、時限の講義が既に存在します。", "error")
         return redirect(url_for('app.teacher.lecture.new'))
 
     # 新しい講義を登録
@@ -115,7 +175,7 @@ def create():
     ''', (current_user.id, subject_name, default_classroom, default_day_of_week, default_period, ero_threshold))
     conn.commit()
 
-    flash("講義が正常に作成されました。")
+    flash("講義が正常に作成されました。", "success")
     return redirect(url_for('app.teacher.dashboard.dashboard'))
 
 
@@ -129,57 +189,6 @@ def new():
 
 
 
-@lecture_bp.route('/start/<int:subject_id>', methods=['GET', 'POST'])
-@teacher_required
-def start_session(subject_id):
-    conn = current_app.get_db()
-    cursor = conn.cursor()
-
-    # 既にアクティブな講義が存在するか確認
-    cursor.execute('SELECT subject_id FROM subject_counts WHERE lecture_active = 1 AND subject_id IN (SELECT id FROM subjects WHERE teacher_id = ?)', (current_user.id,))
-    active_lecture = cursor.fetchone()
-    if active_lecture:
-        flash("アクティブな講義が既に存在しています。終了してください。")
-        return redirect(url_for('app.teacher.lecture.show', subject_id=active_lecture['subject_id']))
-
-    # subjectsテーブルからデフォルトの曜日、時限、教室を取得
-    cursor.execute('''
-        SELECT default_day_of_week, default_period, default_classroom 
-        FROM subjects 
-        WHERE id = ?
-    ''', (subject_id,))
-    subject_defaults = cursor.fetchone()
-
-    if not subject_defaults:
-        return "指定された講義が見つかりません。", 404
-
-    default_day_of_week, default_period, default_classroom = subject_defaults
-
-    if request.method == 'POST':
-        new_day_of_week = request.form.get('day_of_week', default_day_of_week)
-        new_period = request.form.get('period', default_period)
-        new_classroom = request.form.get('classroom', default_classroom)
-        
-        # 現在時刻を取得
-        start_time = datetime.now()
-
-        # 新しい講義回データを追加
-        cursor.execute('''
-            INSERT INTO subject_counts (subject_id, classroom, day_of_week, period, start_time, lecture_active)
-            VALUES (?, ?, ?, ?, ?,?)
-        ''', (subject_id, new_classroom, new_day_of_week, new_period, start_time,True))
-        conn.commit()
-
-        flash('講義を開始しました')
-        return redirect(url_for('app.teacher.lecture.show', subject_id=subject_id))
-
-    return render_template(
-        'teacher/lecture/start.html',
-        subject_id=subject_id,
-        default_day_of_week=default_day_of_week,
-        default_period=default_period,
-        default_classroom=default_classroom
-    )
 
 
 

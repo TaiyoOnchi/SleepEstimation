@@ -8,7 +8,7 @@ show_bp = Blueprint('show', __name__)
 @login_required
 def show(student_number):
     if current_user.role == 'student' and current_user.student_number != student_number:
-        flash('他の学生の情報にはアクセスできません。')
+        flash('他の学生の情報にはアクセスできません。',"error")
         return redirect(url_for('app.student.dashboard.dashboard'))
 
     conn = current_app.get_db()

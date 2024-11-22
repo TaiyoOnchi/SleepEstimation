@@ -5,15 +5,7 @@
 </head>
 <body>
     <h1>教員新規登録</h1>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    {% include 'partials/flash_messages.html' %}
     <form action="{{ url_for('app.teacher.register.register') }}" method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         

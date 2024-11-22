@@ -2,12 +2,20 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user
 from werkzeug.security import check_password_hash
 from app.models import Teacher
+from app.utils import handle_authenticated_user
 
 
 login_bp = Blueprint('login', __name__)
 
 @login_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    redirect_response = handle_authenticated_user()
+    if redirect_response:
+        return redirect_response
+    
+    if 'teacher_info' in session:
+        session.pop('teacher_info', None)
+    
     if request.method == 'POST':
         teacher_number = request.form['teacher_number']
         password = request.form['password']
@@ -25,12 +33,13 @@ def login():
                 teacher = Teacher(teacher_data[0], teacher_data[1], teacher_data[2], teacher_data[3], teacher_data[4])  # Teacherオブジェクトを作成
                 session['role'] = 'teacher'
                 login_user(teacher)  # ログイン
+                flash("ログインしました", "success")
                 return redirect(url_for('app.teacher.dashboard.dashboard'))  # 教員ダッシュボードにリダイレクト
             else:
-                flash("教員番号かパスワードが違います。再度ログインしてください")
+                flash("教員番号かパスワードが違います。再度ログインしてください", "error")
                 return redirect(url_for('app.teacher.login.login'))
         else:
-            flash("教員番号かパスワードが違います。再度ログインしてください")
+            flash("教員番号かパスワードが違います。再度ログインしてください", "error")
             return redirect(url_for('app.teacher.login.login'))
 
     return render_template('teacher/login.html')

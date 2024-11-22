@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>講義情報登録</title>
+</head>
+<body>
+    <h1>講義情報登録</h1>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="subject_name">講義を選択:</label>
+        <select id="subject_name" name="subject_name" required>
+            {% for subject in subjects %}
+                <option value="{{ subject['subject_name'] }}">{{ subject['subject_name'] }}</option>
+            {% endfor %}
+        </select><br><br>
+        <button type="submit">登録</button>
+    </form>
+    
+
+</body>
+</html>

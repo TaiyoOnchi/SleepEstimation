@@ -21,15 +21,7 @@
 </head>
 <body>
     <h1>{{ subject.subject_name }} の詳細</h1>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    {% include 'partials/flash_messages.html' %}
 
     <table>
         <thead>
@@ -87,6 +79,7 @@
                 <th>開始時刻</th>
                 <th>終了時刻</th>
                 <th>状態</th>
+                <th>参加コード</th>
                 <th>詳細</th>
             </tr>
         </thead>
@@ -99,8 +92,8 @@
                 <td>{{ session.classroom }}</td>
                 <td>{{ session.start_time }}</td>
                 <td>{{ session.end_time if session.end_time else '' }}</td>
-
                 <td>{{ '開講中' if session.lecture_active else '終了' }}</td>
+                <td>{{ session.join_code }}</td>
                 <td>
                     <a href="{{ url_for('app.teacher.lecture.session', session_id=session.id) }}">詳細を見る</a>
                 </td>

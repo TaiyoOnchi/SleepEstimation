@@ -9,8 +9,37 @@
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-2xl">
         <div class="bg-white rounded-lg shadow-lg p-8">
+            
             <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">メインページ</h1>
 
+            <!-- 現在参加している講義の情報 -->
+            {% if current_lecture %}
+                <div class="bg-gray-50 rounded-lg p-3 mb-2">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-2">現在参加中の講義</h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-white px-3 py-2 rounded shadow-sm">
+                            <span class="text-sm text-gray-600">教室:</span>
+                            <span class="ml-2 font-medium">{{ current_lecture.classroom }}</span>
+                        </div>
+                        <div class="bg-white px-3 py-2 rounded shadow-sm">
+                            <span class="text-sm text-gray-600">時限:</span>
+                            <span class="ml-2 font-medium">{{ current_lecture.period }}</span>
+                        </div>
+                        <div class="bg-white px-3 py-2 rounded shadow-sm">
+                            <span class="text-sm text-gray-600">曜日:</span>
+                            <span class="ml-2 font-medium">{{ current_lecture.day_of_week }}</span>
+                        </div>
+                        <div class="bg-white px-3 py-2 rounded shadow-sm">
+                            <span class="text-sm text-gray-600">開始時間:</span>
+                            <span class="ml-2 font-medium">{{ current_lecture.start_time }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p>現在参加中の講義はありません。</p>
+            {% endif %}
+
+            <!-- 既存の情報表示セクション -->
             <div class="bg-gray-50 rounded-lg p-3 mb-2">
                 <h2 class="text-lg font-semibold text-gray-700 mb-2">講義情報</h2>
                 <div class="grid grid-cols-3 gap-2">
@@ -37,16 +66,40 @@
 
             <!-- フッター -->
             <div class="flex justify-center">
+                <!-- 退出するボタン -->
+                <form method="POST" action="{{ url_for('app.student.main.exit_lecture') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="w-full inline-flex items-center justify-center px-6 py-3 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                        講義から退出する
+                    </button>
+                </form>
+
                 <a href="{{ url_for('app.auth.logout') }}" 
                    class="inline-flex items-center justify-center px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
                     ログアウト
                 </a>
             </div>
+            
         </div>
     </div>
 
+
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script>
+        // URLクエリパラメータからalert_messageを取得する
+        const urlParams = new URLSearchParams(window.location.search);
+        const alertMessage = urlParams.get("alert_message");
+
+        // アラートメッセージがある場合に表示
+        if (alertMessage) {
+            alert(alertMessage);
+
+            // URLからクエリパラメータを消去
+            const newURL = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, newURL);
+        }
+
         const socket = io();
         socket.emit('main_page_visited');
         const video = document.getElementById('video');

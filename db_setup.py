@@ -72,6 +72,7 @@ def init_db():
             start_time DATETIME NOT NULL,
             end_time DATETIME,
             lecture_active BOOLEAN NOT NULL,
+            join_code VARCHAR(4) NOT NULL,
             FOREIGN KEY (subject_id) REFERENCES subjects (id)
         )
     ''')
@@ -83,13 +84,14 @@ def init_db():
             student_id INTEGER NOT NULL,
             subject_id INTEGER NOT NULL,
             average_eor REAL,
-            total_sleep_time TIME,
-            total_attention INTEGER,
-            total_warnings INTEGER,
+            total_sleep_time TIME DEFAULT '00:00:00',
+            total_attention INTEGER DEFAULT 0,
+            total_warnings INTEGER DEFAULT 0,
             FOREIGN KEY (student_id) REFERENCES students(id),
             FOREIGN KEY (subject_id) REFERENCES subjects(id)
         )
     ''')
+
     
     
 

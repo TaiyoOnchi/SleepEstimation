@@ -1,4 +1,4 @@
-from flask import session, flash, redirect, url_for,current_app
+from flask import session,current_app
 from flask_login import current_user
 from app.models.student import Student
 from app.models.teacher import Teacher

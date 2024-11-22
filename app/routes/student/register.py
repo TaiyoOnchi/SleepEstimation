@@ -1,10 +1,15 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
 from werkzeug.security import generate_password_hash
+from app.utils import handle_authenticated_user
 
 register_bp = Blueprint('register', __name__)
 
 @register_bp.route('/register', methods=['GET', 'POST'])
 def register():
+    redirect_response = handle_authenticated_user()
+    if redirect_response:
+        return redirect_response
+    
     if request.method == 'POST':
         # フォームデータを取得
         student_number = request.form['student_number']
@@ -18,7 +23,7 @@ def register():
         # パスワードのバリデーション
         is_valid, message = is_strong_password(password)
         if not is_valid:
-            flash(message)
+            flash(message,"error")
             # 入力情報をsessionに保存
             session['student_info'] = {
                 'student_number': student_number,
@@ -39,7 +44,7 @@ def register():
         existing_user = cursor.fetchone()
 
         if existing_user:
-            flash("その学籍番号は既に登録されています。")
+            flash("その学籍番号は既に登録されています。","error")
             # 入力情報をsessionに保存
             session['student_info'] = {
                 'student_number': student_number,
