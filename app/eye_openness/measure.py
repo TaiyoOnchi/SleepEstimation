@@ -69,13 +69,14 @@ def calculate_eye_openness(landmarks, img):
     for eye in ['eye_right', 'eye_left']:
         # 目頭と目じりのランドマークインデックス
         if eye == 'eye_right':
-            head_idx, tail_idx = 33, 133  # 右目の目頭と目じり
-            upper_indices = [157, 158, 159, 160]  # 上のランドマーク候補
-            lower_indices = [145, 144, 153, 154]  # 下のランドマーク候補
+            head_idx, tail_idx = 263, 362  # 右目の目頭と目じり
+            upper_indices = [398, 384, 385, 386, 387, 388, 466]  # 上のランドマーク候補
+            lower_indices = [249, 390, 373, 374, 380, 381, 382]  # 下のランドマーク候補
         else:
-            head_idx, tail_idx = 263, 362  # 左目の目頭と目じり
-            upper_indices = [386, 385, 384, 387]  # 上のランドマーク候補
-            lower_indices = [374, 373, 380, 381]  # 下のランドマーク候補
+            head_idx, tail_idx = 33, 133  # 左目の目頭と目じり
+            upper_indices = [173, 157, 158, 159, 160, 161, 246]  # 上のランドマーク候補
+            lower_indices = [7, 163, 144, 145, 153, 154, 155]  # 下のランドマーク候補
+
 
         # 目頭と目じりの座標を取得
         eye_head = np.array([landmarks[head_idx].x * img.shape[1], landmarks[head_idx].y * img.shape[0]])

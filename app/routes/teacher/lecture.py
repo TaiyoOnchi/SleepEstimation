@@ -207,7 +207,7 @@ def session(session_id):
 
     # 講義回に参加している学生の詳細を取得
     cursor.execute("""
-        SELECT students.id, students.last_name, students.first_name, student_participations.attendance_time,
+        SELECT students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_last_name,student_participations.attendance_time,
                student_participations.exit_time, student_participations.attention_count, student_participations.warning_count
         FROM student_participations
         JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id

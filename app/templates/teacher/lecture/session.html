@@ -23,8 +23,9 @@
         </tr>
         {% for student in student_participations %}
         <tr>
-            <td>{{ student.id }}</td>
+            <td>{{ student.student_number }}</td>
             <td>{{ student.last_name }} {{ student.first_name }}</td>
+            <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
             <td>{{ student.attendance_time }}</td>
             <td>{{ student.exit_time }}</td>
             <td>{{ student.attention_count }}</td>

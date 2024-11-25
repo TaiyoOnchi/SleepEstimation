@@ -104,27 +104,32 @@ def join():
 
     # 開講中の講義がない場合はダッシュボードにリダイレクト
     if not active_lectures:
-        return render_template('student/dashboard.html', alert_message="現在、開講中の講義はありません。", alert_type="warning")
+        return render_template('student/dashboard.html', alert_message="現在、開講中の講義はありません。(※開講中の講義に出席するには、履修登録から講義を選択してください)", alert_type="warning")
 
     if request.method == 'POST':
         # 学生が参加コードで講義に参加する処理
         join_code = request.form.get('join_code')
+        session_id = request.form.get('session_id')
+        # session_id が選択されているか確認
+        if not session_id:
+            flash("講義を選択してください。", "error")
+            return redirect(url_for('app.student.lecture.join'))
 
         # 参加コードが4桁の数字であるか確認
         if not (join_code.isdigit() and len(join_code) == 4):
             flash("参加コードは4桁の数字で入力してください。", "error")
             return redirect(url_for('app.student.lecture.join'))
 
+        # 選択した講義の session_id と参加コードが一致するか確認
         cursor.execute('''
-            SELECT subject_counts.id AS session_id
+            SELECT id
             FROM subject_counts
-            WHERE join_code = ? AND lecture_active = 1
-        ''', (join_code,))
+            WHERE id = ? AND join_code = ? AND lecture_active = 1
+        ''', (session_id, join_code))
         session_result = cursor.fetchone()
 
         if session_result:
             # 学生を講義に参加させるロジック
-            session_id = session_result['session_id']
             # 既存の参加記録を確認
             cursor.execute('''
                 SELECT id
@@ -162,3 +167,65 @@ def join():
             flash("無効な参加コードです。", "error")
 
     return render_template('student/lecture/join.html', active_lectures=active_lectures)
+
+
+@lecture_bp.route('/lecture/exit', methods=['POST'])
+@student_required
+def exit():
+    conn = current_app.get_db()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT sp.id
+        FROM student_participations sp
+        JOIN subject_counts sc ON sp.subject_count_id = sc.id
+        WHERE sp.student_subject_id IN (
+            SELECT id FROM student_subjects WHERE student_id = ?
+        )
+        AND sc.lecture_active = 1
+        AND sp.exit_time IS NULL
+    ''', (current_user.id,))
+    active_participations = cursor.fetchall()
+
+
+    if not active_participations:
+        flash("現在参加中の講義がありません。","error")
+
+    elif len(active_participations) > 1:
+        flash("複数の講義が未退出状態です。管理者に連絡してください。","error")
+
+        # # 追加処理: 教員に通知
+        # cursor.execute('''
+        #     SELECT ss.subject_id, sp.seat_number
+        #     FROM student_participations sp
+        #     JOIN student_subjects ss ON sp.student_subject_id = ss.id
+        #     WHERE sp.id = ?
+        # ''', (participation['id'],))
+        # subject_info = cursor.fetchone()
+
+        # if subject_info:
+        #     subject_id = subject_info['subject_id']
+        #     seat_number = subject_info['seat_number']
+
+        #     # WebSocketを利用して通知を送信（例: Socket.IO）
+        #     from app import socketio
+        #     socketio.emit('student_exit', {
+        #         'student_id': current_user.id,
+        #         'subject_id': subject_id,
+        #         'seat_number': seat_number
+        #     }, broadcast=True)
+
+        # セッションにアラートメッセージを設定
+        # 講義から退出する
+    else:
+        # 講義から退出する
+        participation_id = active_participations[0][0]  # IDだけ取得
+        cursor.execute('''
+            UPDATE student_participations
+            SET exit_time = ?
+            WHERE id = ?
+        ''', (datetime.now(), participation_id))
+        conn.commit()
+
+        flash("講義から退出しました", "success")
+    return redirect(url_for('app.student.dashboard.dashboard'))

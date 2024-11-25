@@ -13,10 +13,11 @@
         {% include 'partials/flash_messages.html' %}
         <!-- 開講中の講義リスト -->
         {% if active_lectures %}
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">開講中の講義</h2>
-            <ul class="mb-6 space-y-4">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">開講中の講義(参加する講義をクリックしてください)</h2>
+            <ul id="lecture-list" class="mb-6 space-y-4">
                 {% for lecture in active_lectures %}
-                    <li class="border rounded-lg p-4 bg-gray-50">
+                    <li class="border rounded-lg p-4 bg-gray-50 cursor-pointer lecture-item" 
+                        data-session-id="{{ lecture.session_id }}">
                         <p class="text-lg font-medium text-gray-800">{{ lecture.subject_name }}</p>
                         <p class="text-sm text-gray-600">教室: {{ lecture.classroom }}</p>
                         <p class="text-sm text-gray-600">曜日: {{ lecture.day_of_week }}</p>
@@ -32,6 +33,9 @@
         <!-- 参加コード入力フォーム -->
         <form method="POST" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <!-- 選択した講義の session_id を保存 -->
+            <input type="hidden" id="selected-session-id" name="session_id" value="">
+            
             <label for="join_code" class="block text-gray-700 font-medium">参加コード:</label>
             <input type="text" id="join_code" name="join_code" class="w-full border rounded-lg px-3 py-2"
                    pattern="\d{4}" title="4桁の数字を入力してください。" required>
@@ -41,6 +45,22 @@
         </form>        
     </div>
     <script>
+        const lectureItems = document.querySelectorAll('.lecture-item');
+        const selectedSessionInput = document.getElementById('selected-session-id');
+    
+        lectureItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // 全てのアイテムから選択スタイルを削除
+                lectureItems.forEach(i => i.classList.remove('bg-blue-100', 'border-blue-500'));
+    
+                // クリックされたアイテムに選択スタイルを追加
+                item.classList.add('bg-blue-100', 'border-blue-500');
+    
+                // 選択された session_id を hidden input に設定
+                selectedSessionInput.value = item.dataset.sessionId;
+            });
+        });
+    
         // URLクエリパラメータからalert_messageを取得する
         const urlParams = new URLSearchParams(window.location.search);
         const alertMessage = urlParams.get("alert_message");

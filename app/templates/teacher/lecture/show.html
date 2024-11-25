@@ -72,7 +72,7 @@
     <table>
         <thead>
             <tr>
-                <th>講義回数ID</th>
+                <th>講義回数</th>
                 <th>曜日</th>
                 <th>時限</th>
                 <th>教室</th>
@@ -86,7 +86,7 @@
         <tbody>
             {% for session in lecture_sessions %}
             <tr>
-                <td>{{ session.id }}</td>
+                <td>{{ loop.index }}</td>
                 <td>{{ session.day_of_week }}</td>
                 <td>第{{ session.period }}限</td>
                 <td>{{ session.classroom }}</td>
