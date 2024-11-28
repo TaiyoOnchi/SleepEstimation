@@ -4,7 +4,8 @@ from app.utils import teacher_required
 from datetime import datetime
 import random
 import string
-
+from app import socketio
+from flask_socketio import join_room, leave_room  # join_room をインポート
 
 lecture_bp = Blueprint('lecture', __name__)
 
@@ -90,9 +91,13 @@ def start_session(subject_id):
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', (subject_id, new_classroom, new_day_of_week, new_period, start_time,True, join_code))
         conn.commit()
+        
+        # 挿入した行のIDを取得
+        session_id = cursor.lastrowid
+        
 
         flash('講義を開始しました', "success")
-        return redirect(url_for('app.teacher.lecture.show', subject_id=subject_id))
+        return redirect(url_for('app.teacher.lecture.session', session_id=session_id, subject_id=subject_id))
 
     return render_template(
         'teacher/lecture/start.html',
@@ -101,6 +106,21 @@ def start_session(subject_id):
         default_period=default_period,
         default_classroom=default_classroom
     )
+    
+    
+@socketio.on('teacher_join_room')
+def handle_teacher_join_room(data):
+    teacher_id = data['teacher_id']
+    room_name = f"teacher_{teacher_id}"  # ルーム名を動的に生成
+    join_room(room_name)
+    print(f"Teacher {teacher_id} joined the room {room_name}.")
+
+
+
+
+
+
+
 
 
 # 講義終了の処理
@@ -185,6 +205,7 @@ def create():
 def new():
     # GETリクエストの場合、フォームを表示
     return render_template('teacher/lecture/new.html')
+
 
 
 

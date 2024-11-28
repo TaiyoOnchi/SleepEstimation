@@ -3,14 +3,21 @@ from flask import current_app
 from app import socketio
 from app.eye_openness import decode_image, process_image, save_eye_openness
 from flask_socketio import join_room, leave_room  # join_room をインポート
+from app.utils import student_required, teacher_required
 
 # 開眼率の低下を監視するリストを初期化
 low_eye_openness_count = {}
 
+@socketio.on('teacher_join_room')
+def handle_teacher_join_room():
+    teacher_id = current_user.id
+    room_name = f"teacher_{teacher_id}"  # ルーム名を動的に生成
+    join_room(room_name)
+    print(f"Teacher {teacher_id} joined the room {room_name}.")
 
 
 @socketio.on('main_page_visited')
-@login_required
+@student_required
 def connect():
     print("呼び出されました")
     # ユーザーを student_number の部屋に参加させる
@@ -18,7 +25,7 @@ def connect():
     join_room(student_number)  # join_room を直接呼び出し
     
 @socketio.on('disconnect')
-@login_required
+@student_required
 def handle_disconnect():
     student_number = current_user.student_number
     leave_room(student_number)  # 部屋から退出
@@ -26,10 +33,12 @@ def handle_disconnect():
 
 
 @socketio.on('monitor_eye_openness')
-@login_required
-def monitor_eye_openness(image_data):  # 開眼率測定
+@student_required
+def monitor_eye_openness(data):  # 開眼率測定
     student_number = current_user.student_number
-    
+    # データを受け取る
+    image_data = data['imageData']
+    session_id = data['lectureId']
     # 画像データのデコードと処理
     frame = decode_image(image_data)
     if frame is None:
@@ -42,7 +51,6 @@ def monitor_eye_openness(image_data):  # 開眼率測定
     cursor.execute('SELECT right_eye_baseline, left_eye_baseline FROM students WHERE student_number = ?', (student_number,))
     user_data = cursor.fetchone()
 
-    
     if not user_data:
         return
 
@@ -58,7 +66,7 @@ def monitor_eye_openness(image_data):  # 開眼率測定
         eye_left_rounded = int(left_eye_ratio)
         print(f"左目開眼率: {eye_left_rounded}%, 右目開眼率: {eye_right_rounded}%")
         
-        save_eye_openness(conn,student_number, eye_right_rounded, eye_left_rounded)
+        save_eye_openness(conn,session_id,eye_right_rounded, eye_left_rounded)
 
         # 両目の平均開眼率を計算
         avg_eye_openness = (right_eye_ratio + left_eye_ratio) / 2

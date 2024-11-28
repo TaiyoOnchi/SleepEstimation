@@ -22,18 +22,6 @@ def init_db():
         )
     ''')
 
-    # 開眼率データ保存用テーブル（ユーザーごとに最新3件だけ保持）
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS eye_openness (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            student_id INTEGER NOT NULL,
-            timestamp DATETIME,
-            right_eye_openness INTEGER,
-            left_eye_openness INTEGER,
-            FOREIGN KEY (student_id) REFERENCES students(id)
-        )
-    ''')
-
     # 教員テーブルを作成
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS teachers (
@@ -131,6 +119,18 @@ def init_db():
             student_participation_id INTEGER NOT NULL,
             timestamp DATETIME,
             reason TEXT,
+            FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
+        )
+    ''')
+    
+    # 開眼率データ保存用テーブル（ユーザーごとに最新3件だけ保持）
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS eye_openness (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_participation_id INTEGER NOT NULL,
+            timestamp DATETIME,
+            right_eye_openness INTEGER,
+            left_eye_openness INTEGER,
             FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
         )
     ''')

@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 from flask_login import login_required, current_user
 from app.utils import student_required
 from datetime import datetime
+from app import socketio
 
 
 lecture_bp = Blueprint('lecture', __name__)
@@ -159,6 +160,49 @@ def join():
                     )
                 ''', (session_id, current_user.id, session_id))
                 conn.commit()
+                
+                    # 参加した学生の詳細を取得
+                cursor.execute("""
+                    SELECT students.student_number, students.last_name, students.first_name,
+                        students.kana_last_name, students.kana_first_name,
+                        student_participations.attendance_time, student_participations.exit_time,
+                        student_participations.attention_count, student_participations.warning_count
+                    FROM student_participations
+                    JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
+                    JOIN students ON student_subjects.student_id = students.id
+                    WHERE student_participations.subject_count_id = ? AND student_subjects.student_id = ?
+                """, (session_id, current_user.id))
+                student_data = cursor.fetchone()
+
+                # 講義に紐づく教員のIDを取得
+                cursor.execute('''
+                    SELECT teachers.id
+                    FROM teachers
+                    JOIN subjects ON teachers.id = subjects.teacher_id
+                    JOIN subject_counts ON subjects.id = subject_counts.subject_id
+                    WHERE subject_counts.id = ?
+                ''', (session_id,))
+                teacher_data = cursor.fetchone()
+
+                if not teacher_data:
+                    flash("教員情報が見つかりません。", "error")
+                    return redirect(url_for('app.student.lecture.join'))
+
+                teacher_id = teacher_data[0]
+                socketio.emit('student_joined', {
+                    'student_number': student_data[0],
+                    'last_name': student_data[1],
+                    'first_name': student_data[2],
+                    'kana_last_name': student_data[3],
+                    'kana_first_name': student_data[4],
+                    'attendance_time': student_data[5],
+                    'exit_time': student_data[6],
+                    'attention_count': student_data[7],
+                    'warning_count': student_data[8],
+                }, room=f"teacher_{teacher_id}")  # ルーム名を動的に生成
+
+
+
 
                 return redirect(url_for('app.student.main.main', 
                                 alert_message="講義に参加しました", 

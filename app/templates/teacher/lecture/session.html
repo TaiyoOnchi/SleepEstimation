@@ -10,30 +10,75 @@
     <h2>{{ lecture_session.day_of_week }} 第{{ lecture_session.period }}限 - {{ lecture_session.classroom }}</h2>
     <p>開始時刻: {{ lecture_session.start_time }}</p>
     <p>終了時刻: {{ lecture_session.end_time }}</p>
+    <p>参加コード: {{ lecture_session.join_code }}</p>
 
     <h3>参加学生</h3>
-    <table border="1">
-        <tr>
-            <th>学生ID</th>
-            <th>氏名</th>
-            <th>出席時刻</th>
-            <th>退席時刻</th>
-            <th>注意回数</th>
-            <th>警告回数</th>
-        </tr>
-        {% for student in student_participations %}
-        <tr>
-            <td>{{ student.student_number }}</td>
-            <td>{{ student.last_name }} {{ student.first_name }}</td>
-            <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
-            <td>{{ student.attendance_time }}</td>
-            <td>{{ student.exit_time }}</td>
-            <td>{{ student.attention_count }}</td>
-            <td>{{ student.warning_count }}</td>
-        </tr>
-        {% endfor %}
+    <table border="1" id="participants">
+        <thead>
+            <tr>
+                <th>学籍番号</th>
+                <th>カナ</th>
+                <th>氏名</th>
+                <th>出席時刻</th>
+                <th>退席時刻</th>
+                <th>注意回数</th>
+                <th>警告回数</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in student_participations %}
+            <tr>
+                <td>{{ student.student_number }}</td>
+                <td>{{ student.last_name }} {{ student.first_name }}</td>
+                <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
+                <td>{{ student.attendance_time }}</td>
+                <td>{{ student.exit_time }}</td>
+                <td>{{ student.attention_count }}</td>
+                <td>{{ student.warning_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-
+    
     <p><a href="{{ url_for('app.teacher.dashboard.dashboard') }}">ダッシュボードに戻る</a></p>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const socket = io();
+            socket.emit('teacher_join_room');
+            
+            socket.on('student_joined', function(data) {
+                const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
+                if (!table) {
+                    console.error("Table not found!");
+                    return;
+                }
+                const newRow = table.insertRow();
+                newRow.insertCell(0).textContent = data.student_number;
+                newRow.insertCell(1).textContent = `${data.kana_last_name} ${data.kana_first_name}`;
+                newRow.insertCell(2).textContent = `${data.last_name} ${data.first_name}`;
+                newRow.insertCell(3).textContent = data.attendance_time;
+                newRow.insertCell(4).textContent = data.exit_time || '-';
+                newRow.insertCell(5).textContent = data.attention_count;
+                newRow.insertCell(6).textContent = data.warning_count;
+            });
+        });
+        
+
+            // 学生が退出したときに行を削除または更新
+            socket.on('student_exited', function(data) {
+                const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
+
+                for (let row of table.rows) {
+                    if (row.cells[0].textContent == data.student_number) {
+                        row.cells[6].textContent = data.exit_time || '-';
+                        return;
+                    }
+                }
+            });
+
+        
+    </script>
 </body>
 </html>
