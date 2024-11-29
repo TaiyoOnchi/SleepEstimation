@@ -16,7 +16,7 @@ def handle_teacher_join_room():
     print(f"Teacher {teacher_id} joined the room {room_name}.")
 
 
-@socketio.on('main_page_visited')
+@socketio.on('student_join_room')
 @student_required
 def connect():
     print("呼び出されました")
@@ -25,11 +25,37 @@ def connect():
     join_room(student_number)  # join_room を直接呼び出し
     
 @socketio.on('disconnect')
-@student_required
+@login_required
 def handle_disconnect():
-    student_number = current_user.student_number
-    leave_room(student_number)  # 部屋から退出
-    print(f"{student_number} は部屋を退出しました。")
+    # ログインしているユーザーが学生の場合
+    if current_user.role == 'student':
+        student_number = current_user.student_number
+        leave_room(student_number)  # 学生の部屋から退出
+        print(f"学生 {student_number} は部屋を退出しました。")
+        
+        # # 必要に応じて学生の退出時の処理を追加
+        # # 例: データベースに退席時刻を記録するなど
+        # conn = current_app.get_db()
+        # cursor = conn.cursor()
+        # cursor.execute('''
+        #     UPDATE student_participations
+        #     SET exit_time = ?
+        #     WHERE student_number = ? AND exit_time IS NULL
+        # ''', (datetime.now(), student_number))
+        # conn.commit()
+
+    # ログインしているユーザーが教員の場合
+    elif current_user.role == 'teacher':
+        teacher_id = current_user.id
+        room_name = f"teacher_{teacher_id}"  # 教員のルーム名
+        leave_room(room_name)  # 教員の部屋から退出
+        print(f"教員 {teacher_id} は部屋を退出しました。")
+
+
+    else:
+        # ユーザーがログインしていない、または不明なタイプの場合
+        print("未確認のユーザーが接続を切断しました。")
+
 
 
 @socketio.on('monitor_eye_openness')

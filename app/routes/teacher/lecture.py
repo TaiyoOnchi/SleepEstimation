@@ -108,12 +108,12 @@ def start_session(subject_id):
     )
     
     
-@socketio.on('teacher_join_room')
-def handle_teacher_join_room(data):
-    teacher_id = data['teacher_id']
-    room_name = f"teacher_{teacher_id}"  # ルーム名を動的に生成
-    join_room(room_name)
-    print(f"Teacher {teacher_id} joined the room {room_name}.")
+# @socketio.on('teacher_join_room')
+# def handle_teacher_join_room(data):
+#     teacher_id = data['teacher_id']
+#     room_name = f"teacher_{teacher_id}"  # ルーム名を動的に生成
+#     join_room(room_name)
+#     print(f"Teacher {teacher_id} joined the room {room_name}.")
 
 
 

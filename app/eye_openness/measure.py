@@ -26,7 +26,7 @@ def process_image(frame):
         
         # ピッチ角（顔の傾き）を計算(正面が90°)
         pitch_angle = calculate_pitch_angle(landmarks, frame)
-        print(pitch_angle)
+        print(f"顔の傾き: {pitch_angle}")
 
 
         # 目の開眼率を計算
@@ -91,18 +91,18 @@ def calculate_eye_openness(landmarks, img):
             lid_point = np.array([landmarks[idx].x * img.shape[1], landmarks[idx].y * img.shape[0]])
             perpendicular_point = calculate_perpendicular_point(eye_head, eye_tail, lid_point)
             distance = np.linalg.norm(lid_point - perpendicular_point)
-            print(f"Upper lid landmark {idx}: {lid_point}, Perpendicular: {perpendicular_point}, Distance: {distance}")
+            # print(f"Upper lid landmark {idx}: {lid_point}, Perpendicular: {perpendicular_point}, Distance: {distance}")
             max_upper_distance = max(max_upper_distance, distance)
-        print(f"Max upper lid distance: {max_upper_distance}")
+        #print(f"Max upper lid distance: {max_upper_distance}")
 
         # 下まぶたのランドマークを処理
         for idx in lower_indices:
             lid_point = np.array([landmarks[idx].x * img.shape[1], landmarks[idx].y * img.shape[0]])
             perpendicular_point = calculate_perpendicular_point(eye_head, eye_tail, lid_point)
             distance = np.linalg.norm(lid_point - perpendicular_point)
-            print(f"Lower lid landmark {idx}: {lid_point}, Perpendicular: {perpendicular_point}, Distance: {distance}")
+            # print(f"Lower lid landmark {idx}: {lid_point}, Perpendicular: {perpendicular_point}, Distance: {distance}")
             max_lower_distance = max(max_lower_distance, distance)
-        print(f"Max upper lid distance: {max_upper_distance}")
+        #print(f"Max upper lid distance: {max_upper_distance}")
 
         # 開眼度を計算（上まぶたと下まぶたの最大距離の和）
         total_eye_openness = max_upper_distance + max_lower_distance
@@ -135,7 +135,7 @@ def calculate_perpendicular_point(eye_head, eye_tail, lid_point):
 # ピッチ角に基づいて目の開眼率を補正する関数
 def apply_pitch_correction(eye_openness, pitch_angle):
     # ピッチ角が前傾している場合、開眼率を調整（角度が大きいほど補正）
-    n=25
+    n=50
     correction_factor = 1 + abs(abs(pitch_angle)-90) / n  # 上を向くと90↓、下を向くと90↑(補正変更可)
     # 開眼率を補正した値で返す
     corrected_eye_openness = eye_openness * correction_factor
