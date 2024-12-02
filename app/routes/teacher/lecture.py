@@ -5,7 +5,7 @@ from datetime import datetime
 import random
 import string
 from app import socketio
-from flask_socketio import join_room, leave_room  # join_room をインポート
+
 
 lecture_bp = Blueprint('lecture', __name__)
 
