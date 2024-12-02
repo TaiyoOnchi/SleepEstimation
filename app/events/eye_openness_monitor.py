@@ -76,13 +76,21 @@ def monitor_eye_openness(data):  # 開眼率測定
     # データベースから基準値を取得
     conn = current_app.get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT right_eye_baseline, left_eye_baseline FROM students WHERE student_number = ?', (student_number,))
+    # データベースから基準値とero_thresholdを取得
+    cursor.execute('''
+        SELECT s.right_eye_baseline, s.left_eye_baseline, sub.ero_threshold
+        FROM students s
+        JOIN student_subjects ss ON s.id = ss.student_id
+        JOIN subjects sub ON ss.subject_id = sub.id
+        JOIN student_participations sp ON ss.id = sp.student_subject_id
+        WHERE s.student_number = ? AND sp.id = ?
+    ''', (student_number, session_id))
     user_data = cursor.fetchone()
 
     if not user_data:
         return
 
-    right_eye_baseline, left_eye_baseline = user_data
+    right_eye_baseline, left_eye_baseline, ero_threshold = user_data
     _, eye_openness = process_image(frame)
 
     # 学生が辞書に存在しない場合の初期化
@@ -104,9 +112,13 @@ def monitor_eye_openness(data):  # 開眼率測定
 
         # 両目の平均開眼率を計算
         avg_eye_openness = (right_eye_ratio + left_eye_ratio) / 2
+        socketio.emit('eye_openness_update', {
+            'avgEyeOpenness': avg_eye_openness,
+            'eroThreshold': ero_threshold
+        }, room=student_number)
 
         # 現在の開眼率が50%未満の場合、リストに追加
-        if avg_eye_openness < 50:
+        if avg_eye_openness < ero_threshold:
             low_eye_openness_count[student_number].append(avg_eye_openness)
         else:
             # 50%以上であればリストをリセット
