@@ -24,17 +24,24 @@ def main():
         AND sc.lecture_active = 1
         AND sp.exit_time IS NULL
     ''', (current_user.id,))
-    current_lecture = cursor.fetchone()
-    
-    classroom = session.get('classroom', '未登録')
+    lecture_info = cursor.fetchone()
+
+    if lecture_info:
+        student_participation_id = lecture_info[0]
+        current_lecture = {
+            "classroom": lecture_info[1],
+            "day_of_week": lecture_info[2],
+            "period": lecture_info[3],
+            "start_time": lecture_info[4]
+        }
+    else:
+        student_participation_id = None
+        current_lecture = {}
+
     seat_number = session.get('seat_number', '未登録')
-    period = session.get('period', '未登録')
-    
-    return render_template('student/main.html', 
-        classroom=classroom, 
-        seat_number=seat_number, 
-        period=period,
+
+    return render_template('student/main.html',
+        seat_number=seat_number,
+        student_participation_id=student_participation_id,
         current_lecture=current_lecture
     )
-
-

@@ -4,10 +4,14 @@ from app import socketio
 from app.eye_openness import decode_image, process_image, save_eye_openness
 from flask_socketio import join_room, leave_room  # join_room をインポート
 from app.utils import student_required, teacher_required
+from datetime import datetime
+
+
 
 
 
 @socketio.on('teacher_join_room')
+@teacher_required
 def handle_teacher_join_room():
     teacher_id = current_user.id
     room_name = f"teacher_{teacher_id}"  # ルーム名を動的に生成
@@ -66,7 +70,7 @@ def monitor_eye_openness(data):  # 開眼率測定
     student_number = current_user.student_number
     # データを受け取る
     image_data = data['imageData']
-    session_id = data['lectureId']
+    participation_id = data['student_participation_id']
     # 画像データのデコードと処理
     frame = decode_image(image_data)
     if frame is None:
@@ -84,7 +88,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         JOIN subjects sub ON ss.subject_id = sub.id
         JOIN student_participations sp ON ss.id = sp.student_subject_id
         WHERE s.student_number = ? AND sp.id = ?
-    ''', (student_number, session_id))
+    ''', (student_number, participation_id))
     user_data = cursor.fetchone()
 
     if not user_data:
@@ -108,7 +112,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         eye_left_rounded = int(left_eye_ratio)
         print(f"左目開眼率: {eye_left_rounded}%, 右目開眼率: {eye_right_rounded}%")
         
-        save_eye_openness(conn, session_id, eye_right_rounded, eye_left_rounded)
+        save_eye_openness(conn, participation_id, eye_right_rounded, eye_left_rounded)
 
         # 両目の平均開眼率を計算
         avg_eye_openness = (right_eye_ratio + left_eye_ratio) / 2
@@ -117,17 +121,48 @@ def monitor_eye_openness(data):  # 開眼率測定
             'eroThreshold': ero_threshold
         }, room=student_number)
 
-        # 現在の開眼率が50%未満の場合、リストに追加
+        # 現在の開眼率が閾値未満の場合、リストに追加
         if avg_eye_openness < ero_threshold:
             low_eye_openness_count[student_number].append(avg_eye_openness)
         else:
-            # 50%以上であればリストをリセット
+            # 閾値以上であればリストをリセット
             low_eye_openness_count[student_number] = []
 
-        # 三回連続で50%未満の場合、通知を表示
-        if len(low_eye_openness_count[student_number]) >= 3:
+        # 三回連続で閾値以下の場合、通知を表示
+        if len(low_eye_openness_count[student_number]) == 3:
             socketio.emit('low_eye_openness_alert', {'message': '開眼率が低下しています！姿勢を正してください。'}, room=student_number)
+        
+        if len(low_eye_openness_count[student_number]) >= 6:
+            # 注意回数が記録された際の処理
+            cursor.execute('''
+                UPDATE student_subjects
+                SET total_attention = total_attention + 1
+                WHERE id = (
+                    SELECT ss.id 
+                    FROM student_subjects ss
+                    JOIN student_participations sp ON ss.id = sp.student_subject_id
+                    WHERE sp.id = ?
+                )
+            ''', (participation_id,))
+            
+            cursor.execute('''
+                UPDATE student_participations
+                SET attention_count = attention_count + 1
+                WHERE id = ?
+            ''', (participation_id,))
+            
+            # attentions テーブルに新しいレコードを挿入
+            cursor.execute('''
+                INSERT INTO attentions (student_participation_id, timestamp)
+                VALUES (?, ?)
+            ''', (participation_id, datetime.now()))
+
+            conn.commit()  # 変更を保存
+            
+            socketio.emit('low_eye_openness_alert', {'message': '開眼率が連続して低下していたため、注意回数が記録されました。'}, room=student_number)
             low_eye_openness_count[student_number] = []  # カウンターをリセット
+
+            
 
         # 開眼率取得失敗カウンターをリセット
         failed_eye_openness_count[student_number] = 0
@@ -138,7 +173,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         failed_eye_openness_count[student_number] += 1
 
         # 開眼率取得失敗が5回連続の場合、通知を送信
-        if failed_eye_openness_count[student_number] >= 5:
+        if failed_eye_openness_count[student_number] == 5:
             socketio.emit('low_eye_openness_alert', {'message': '開眼率の検出に失敗しています。カメラの状態を確認してください。'}, room=student_number)
             
         # 開眼率取得失敗が10回連続の場合、通知を送信

@@ -106,8 +106,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS attentions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_participation_id INTEGER NOT NULL,
-            attention_count INTEGER,
             timestamp DATETIME,
+            sleep_time TIME DEFAULT '00:00:00',
             FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
         )
     ''')
