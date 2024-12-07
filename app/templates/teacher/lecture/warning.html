@@ -1,0 +1,12 @@
+<h1>警告作成ページ</h1>
+<p>学生番号: {{ student_info.student_number}}</p>
+<p>名前: {{ student_info.last_name }} {{ student_info.first_name }}</p>
+
+<form action="{{ url_for('app.teacher.lecture.submit_warning') }}" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="student_id" value="{{ student_info.id }}">
+    <input type="hidden" name="student_number" value="{{ student_info.student_number }}">
+    <label for="reason">理由:</label><br>
+    <textarea id="reason" name="reason" required></textarea><br>
+    <button type="submit">送信</button>
+</form>

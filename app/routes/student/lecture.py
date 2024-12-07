@@ -163,7 +163,7 @@ def join():
                 
                     # 参加した学生の詳細を取得
                 cursor.execute("""
-                    SELECT students.student_number, students.last_name, students.first_name,
+                    SELECT students.id, students.student_number, students.last_name, students.first_name,
                         students.kana_last_name, students.kana_first_name,
                         student_participations.attendance_time, student_participations.exit_time,
                         student_participations.attention_count, student_participations.warning_count
@@ -190,16 +190,18 @@ def join():
 
                 teacher_id = teacher_data[0]
                 socketio.emit('student_joined', {
-                    'student_number': student_data[0],
-                    'last_name': student_data[1],
-                    'first_name': student_data[2],
-                    'kana_last_name': student_data[3],
-                    'kana_first_name': student_data[4],
-                    'attendance_time': student_data[5],
-                    'exit_time': student_data[6],
-                    'attention_count': student_data[7],
-                    'warning_count': student_data[8],
+                    'id': student_data[0],
+                    'student_number': student_data[1],
+                    'last_name': student_data[2],  
+                    'first_name': student_data[3], 
+                    'kana_last_name': student_data[4],
+                    'kana_first_name': student_data[5],
+                    'attendance_time': student_data[6],
+                    'exit_time': student_data[7],
+                    'attention_count': student_data[8],
+                    'warning_count': student_data[9],
                 }, room=f"teacher_{teacher_id}")  # ルーム名を動的に生成
+
 
 
 

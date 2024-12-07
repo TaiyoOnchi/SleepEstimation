@@ -223,7 +223,7 @@ def session(session_id):
 
     # 講義回に参加している学生の詳細を取得
     cursor.execute("""
-        SELECT students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_last_name,student_participations.attendance_time,
+        SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_last_name,student_participations.attendance_time,
                student_participations.exit_time, student_participations.attention_count, student_participations.warning_count
         FROM student_participations
         JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
@@ -235,3 +235,88 @@ def session(session_id):
     return render_template('teacher/lecture/session.html', 
                            lecture_session=lecture_session, 
                            student_participations=student_participations)
+
+
+
+
+@lecture_bp.route('/create_warning')
+@teacher_required
+def create_warning():
+    student_id = request.args.get('student_id')
+    conn = current_app.get_db()
+    cursor = conn.cursor()
+
+    # 学生情報の取得
+    cursor.execute('''
+        SELECT *
+        FROM students 
+        WHERE students.id = ?
+    ''', (student_id,))
+    student_info = cursor.fetchone()
+    
+    if not student_info:
+        flash("学生情報が見つかりません", "error")
+        return redirect(url_for('app.teacher.dashboard.dashboard'))
+
+    return render_template('teacher/lecture/warning.html', student_info=student_info)
+
+
+@lecture_bp.route('/submit_warning', methods=['POST'])
+@teacher_required
+def submit_warning():
+    student_id = request.form['student_id']
+    student_number = request.form['student_number']
+    reason = request.form['reason']
+    timestamp = datetime.now()
+
+    conn = current_app.get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT sp.id
+        FROM student_participations sp
+        JOIN student_subjects ss ON sp.student_subject_id = ss.id
+        JOIN students ON ss.student_id = students.id
+        WHERE ss.student_id = ?
+        AND sp.exit_time IS NULL
+    ''', (student_id,))
+    result = cursor.fetchone()
+
+    if not result:
+        flash("学生の参加情報が見つかりませんでした。", "error")
+        return redirect(url_for('teacher_dashboard'))
+
+    # `fetchone()`はタプルを返すので、最初の値を取得
+    participation_id = result[0]
+    
+    # 注意回数が記録された際の処理
+    cursor.execute('''
+        UPDATE student_subjects
+        SET total_warnings = total_warnings + 1
+        WHERE id = (
+            SELECT ss.id 
+            FROM student_subjects ss
+            JOIN student_participations sp ON ss.id = sp.student_subject_id
+            WHERE sp.id = ?
+        )
+    ''', (participation_id,))
+    
+    cursor.execute('''
+        UPDATE student_participations
+        SET warning_count = warning_count + 1
+        WHERE id = ?
+    ''', (participation_id,))
+    
+    # 警告テーブルに挿入
+    cursor.execute('''
+        INSERT INTO warnings (student_participation_id, timestamp, reason)
+        VALUES (?, ?, ?)
+    ''', (participation_id, timestamp, reason))
+    
+    conn.commit()
+    print(f'学籍番号{student_number}')
+    # 学生に警告を通知
+    socketio.emit('low_eye_openness_alert', {'message': f'教員から警告が送信されました。理由：{reason}'}, room=student_number)
+
+    flash("警告が作成されました", "success")
+    return redirect(url_for('app.teacher.lecture.session',session_id=participation_id))

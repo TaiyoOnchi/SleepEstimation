@@ -6,6 +6,7 @@
 </head>
 <body>
     <h1>講義回詳細</h1>
+    {% include 'partials/flash_messages.html' %}
 
     <h2>{{ lecture_session.day_of_week }} 第{{ lecture_session.period }}限 - {{ lecture_session.classroom }}</h2>
     <p>開始時刻: {{ lecture_session.start_time }}</p>
@@ -30,6 +31,7 @@
                 <th>退席時刻</th>
                 <th>注意回数</th>
                 <th>警告回数</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -42,6 +44,7 @@
                 <td>{{ student.exit_time }}</td>
                 <td>{{ student.attention_count }}</td>
                 <td>{{ student.warning_count }}</td>
+                <td><a href="{{ url_for('app.teacher.lecture.create_warning', student_id=student.id) }}">警告を送信</a></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -66,9 +69,15 @@
                 newRow.insertCell(1).textContent = `${data.kana_last_name} ${data.kana_first_name}`;
                 newRow.insertCell(2).textContent = `${data.last_name} ${data.first_name}`;
                 newRow.insertCell(3).textContent = data.attendance_time;
-                newRow.insertCell(4).textContent = data.exit_time || '-';
+                newRow.insertCell(4).textContent = data.exit_time || 'None';
                 newRow.insertCell(5).textContent = data.attention_count;
                 newRow.insertCell(6).textContent = data.warning_count;
+                // 「警告を送信」ボタンを追加
+                const warningCell = newRow.insertCell(7);
+                const warningLink = document.createElement('a');
+                warningLink.href = `/teacher/create_warning?student_id=${data.id}`;
+                warningLink.textContent = '警告を送信';
+                warningCell.appendChild(warningLink);
             });
 
             // 学生が退出した場合の処理
