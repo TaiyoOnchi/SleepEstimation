@@ -73,7 +73,7 @@ def init_db():
             subject_id INTEGER NOT NULL,
             average_eor REAL,
             total_sleep_time TIME DEFAULT '00:00:00',
-            total_attention INTEGER DEFAULT 0,
+            total_attentions INTEGER DEFAULT 0,
             total_warnings INTEGER DEFAULT 0,
             FOREIGN KEY (student_id) REFERENCES students(id),
             FOREIGN KEY (subject_id) REFERENCES subjects(id)

@@ -161,7 +161,7 @@ def monitor_eye_openness(data):  # 開眼率測定
             # 注意回数が記録された際の処理
             cursor.execute('''
                 UPDATE student_subjects
-                SET total_attention = total_attention + 1
+                SET total_attentions = total_attentions + 1
                 WHERE id = (
                     SELECT ss.id 
                     FROM student_subjects ss
@@ -191,15 +191,14 @@ def monitor_eye_openness(data):  # 開眼率測定
             
             # 教員向け通知
             teacher_id = get_teacher_id_by_participation_id(participation_id)  # 関連する教員IDを取得する関数を実装
-            print(teacher_id)
+            
             if teacher_id:
                 teacher_room = f"teacher_{teacher_id}"
                 socketio.emit('attention_updated', {
                     'student_number': student_number,
                     'attention_count': get_attention_count(participation_id)  # 現在の注意回数を取得
                 }, room=teacher_room)
-            else:
-                print("???")
+
 
 
 
@@ -219,7 +218,7 @@ def monitor_eye_openness(data):  # 開眼率測定
             # 注意回数が記録された際の処理
             cursor.execute('''
                 UPDATE student_subjects
-                SET total_attention = total_attention + 1
+                SET total_attentions = total_attentions + 1
                 WHERE id = (
                     SELECT ss.id 
                     FROM student_subjects ss
@@ -282,5 +281,4 @@ def get_attention_count(participation_id):
         WHERE id = ?
     ''', (participation_id,))
     result = cursor.fetchone()
-    print(result[0])
     return result[0] if result else 0
