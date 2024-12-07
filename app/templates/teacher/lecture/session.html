@@ -70,20 +70,43 @@
                 newRow.insertCell(5).textContent = data.attention_count;
                 newRow.insertCell(6).textContent = data.warning_count;
             });
-        });
-        
 
-            // 学生が退出したときに行を削除または更新
+            // 学生が退出した場合の処理
             socket.on('student_exited', function(data) {
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
-
                 for (let row of table.rows) {
-                    if (row.cells[0].textContent == data.student_number) {
-                        row.cells[6].textContent = data.exit_time || '-';
+                    if (row.cells[0].textContent === data.student_number) {
+                        row.cells[4].textContent = data.exit_time; // 退出時間を更新
                         return;
                     }
                 }
             });
+
+            // 注意回数更新通知
+            socket.on('attention_updated', function(data) {
+                const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
+                for (let row of table.rows) {
+                    if (row.cells[0].textContent === data.student_number) {
+                        row.cells[5].textContent = data.attention_count; // 注意回数を更新
+                        return;
+                    }
+                }
+            });
+
+            // 警告回数更新通知
+            socket.on('warning_updated', function(data) {
+                const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
+                for (let row of table.rows) {
+                    if (row.cells[0].textContent === data.student_number) {
+                        row.cells[6].textContent = data.warning_count; // 警告回数を更新
+                        return;
+                    }
+                }
+            });
+        });
+        
+
+
         function confirmEndSession() {
             return confirm("本当に講義を終了しますか？");
         }

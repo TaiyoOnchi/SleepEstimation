@@ -94,8 +94,8 @@ def init_db():
             average_eor REAL,
             attendance_time DATETIME,
             exit_time DATETIME,
-            attention_count INTEGER,
-            warning_count INTEGER,
+            attention_count INTEGER DEFAULT 0,
+            warning_count INTEGER DEFAULT 0,
             FOREIGN KEY (student_subject_id) REFERENCES student_subjects(id),
             FOREIGN KEY (subject_count_id) REFERENCES subject_counts(id)
         )

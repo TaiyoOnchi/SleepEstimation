@@ -220,23 +220,21 @@ def exit():
     cursor = conn.cursor()
 
     cursor.execute('''
-        SELECT sp.id
+        SELECT sp.id, sp.subject_count_id, students.student_number
         FROM student_participations sp
-        JOIN subject_counts sc ON sp.subject_count_id = sc.id
-        WHERE sp.student_subject_id IN (
-            SELECT id FROM student_subjects WHERE student_id = ?
-        )
-        AND sc.lecture_active = 1
+        JOIN student_subjects ss ON sp.student_subject_id = ss.id
+        JOIN students ON ss.student_id = students.id
+        WHERE ss.student_id = ?
         AND sp.exit_time IS NULL
     ''', (current_user.id,))
-    active_participations = cursor.fetchall()
+    active_participation = cursor.fetchone()
 
 
-    if not active_participations:
-        flash("現在参加中の講義がありません。","error")
+    if not active_participation:
+        flash("現在参加中の講義がありません。", "error")
 
-    elif len(active_participations) > 1:
-        flash("複数の講義が未退出状態です。管理者に連絡してください。","error")
+    # elif len(active_participations) > 1:
+    #     flash("複数の講義が未退出状態です。管理者に連絡してください。","error")
 
         # # 追加処理: 教員に通知
         # cursor.execute('''
@@ -263,13 +261,34 @@ def exit():
         # 講義から退出する
     else:
         # 講義から退出する
-        participation_id = active_participations[0][0]  # IDだけ取得
+        participation_id, session_id, student_number = active_participation
+
+        # 退出時間を更新
+        exit_time = datetime.now()
         cursor.execute('''
             UPDATE student_participations
             SET exit_time = ?
             WHERE id = ?
-        ''', (datetime.now(), participation_id))
+        ''', (exit_time, participation_id))
         conn.commit()
 
+        # 教員のIDを取得
+        cursor.execute('''
+            SELECT teachers.id
+            FROM teachers
+            JOIN subjects ON teachers.id = subjects.teacher_id
+            JOIN subject_counts ON subjects.id = subject_counts.subject_id
+            WHERE subject_counts.id = ?
+        ''', (session_id,))
+        teacher_data = cursor.fetchone()
+
+        if teacher_data:
+            teacher_id = teacher_data[0]
+            socketio.emit('student_exited', {
+                'student_number': student_number,
+                'exit_time': exit_time.strftime('%Y-%m-%d %H:%M:%S')
+            }, room=f"teacher_{teacher_id}")
+
         flash("講義から退出しました", "success")
+
     return redirect(url_for('app.student.dashboard.dashboard'))
