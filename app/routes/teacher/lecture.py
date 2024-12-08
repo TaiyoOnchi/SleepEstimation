@@ -315,7 +315,7 @@ def submit_warning():
     print(f'学籍番号{student_number}')
     # 学生に警告を通知
     socketio.emit(
-        'low_eye_openness_alert', 
+        'warning_alert', 
         {'message': f'教員から警告が送信されました。\n理由：{reason}'}, 
         room=student_number
     )
