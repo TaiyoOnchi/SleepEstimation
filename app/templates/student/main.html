@@ -67,7 +67,7 @@
         <!-- フッター -->
         <div class="flex justify-center">
             <!-- 退出するボタン -->
-            <form method="POST" action="{{ url_for('app.student.lecture.exit') }}">
+            <form method="POST" action="{{ url_for('app.student.lecture.exit') }}" onsubmit="return confirmExitSession()">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit"
                         class="w-full inline-flex items-center justify-center px-6 py-3 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
@@ -170,6 +170,9 @@
                 videoContainer.className = 'border-8 border-red-500 rounded-lg mb-4';
             }
         });
+        function confirmExitSession() {
+            return confirm("本当に講義から退出しますか？");
+        }
         
     </script>
 </body>
