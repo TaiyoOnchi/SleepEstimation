@@ -37,7 +37,7 @@
         <tbody>
             {% for student in student_participations %}
             <tr>
-                <td>{{ student.student_number }}</td>
+                <td> <a href="{{ url_for('app.teacher.lecture.session_student_details', session_id=lecture_session.id, student_id=student.id) }}">{{ student.student_number }}</a></td>
                 <td>{{ student.last_name }} {{ student.first_name }}</td>
                 <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
                 <td>{{ student.attendance_time }}</td>
@@ -57,6 +57,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const socket = io();
             socket.emit('teacher_join_room');
+
+            // サーバーから lecture_session.id を渡す
+            const sessionId = {{ lecture_session.id|tojson }};
             
             socket.on('student_joined', function(data) {
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
@@ -65,7 +68,14 @@
                     return;
                 }
                 const newRow = table.insertRow();
-                newRow.insertCell(0).textContent = data.student_number;
+
+                // 学籍番号セルにリンクを作成
+                const studentNumberCell = newRow.insertCell(0);
+                const studentLink = document.createElement('a');
+                studentLink.href = `/teacher/session/${sessionId}/student/${data.id}`;
+                studentLink.textContent = data.student_number;
+                studentNumberCell.appendChild(studentLink);
+                
                 newRow.insertCell(1).textContent = `${data.kana_last_name} ${data.kana_first_name}`;
                 newRow.insertCell(2).textContent = `${data.last_name} ${data.first_name}`;
                 newRow.insertCell(3).textContent = data.attendance_time;

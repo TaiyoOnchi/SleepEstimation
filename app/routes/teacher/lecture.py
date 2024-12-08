@@ -320,3 +320,99 @@ def submit_warning():
 
     flash("警告が作成されました", "success")
     return redirect(url_for('app.teacher.lecture.session',session_id=participation_id))
+
+
+
+@lecture_bp.route('/session/<int:session_id>/student/<int:student_id>')
+def session_student_details(session_id, student_id):
+    conn = current_app.get_db()
+    cursor = conn.cursor()
+
+    # `student_subject_id` を取得
+    cursor.execute('''
+        SELECT ss.id
+        FROM student_subjects ss
+        JOIN subject_counts sc ON sc.subject_id = ss.subject_id
+        WHERE ss.student_id = ? AND sc.id = ?
+    ''', (student_id, session_id))
+    student_subject_id = cursor.fetchone()
+    
+    if not student_subject_id:
+        return "該当するデータが見つかりません", 404
+    
+    student_subject_id = student_subject_id[0]
+
+    # 学生基本情報を取得
+    cursor.execute('''
+        SELECT student_number, kana_last_name, kana_first_name, last_name, first_name
+        FROM students
+        WHERE id = ?
+    ''', (student_id,))
+    student_info = cursor.fetchone()
+    
+    # 講義全体の注意・警告回数を取得
+    cursor.execute('''
+        SELECT total_attentions, total_warnings
+        FROM student_subjects
+        WHERE id = ?
+    ''', (student_subject_id,))
+    lecture_totals = cursor.fetchone()
+
+    # 学生の出席情報を取得
+    cursor.execute('''
+        SELECT attendance_time, exit_time, attention_count, warning_count
+        FROM student_participations
+        WHERE student_subject_id = ? AND subject_count_id = ?
+    ''', (student_subject_id, session_id))
+    participation_info = cursor.fetchone()
+
+
+
+
+    # attentions情報を取得
+    cursor.execute('''
+        SELECT id, timestamp, sleep_time
+        FROM attentions
+        WHERE student_participation_id = (
+            SELECT id
+            FROM student_participations
+            WHERE student_subject_id = ? AND subject_count_id = ?
+        )
+    ''', (student_subject_id, session_id))
+    attentions = cursor.fetchall()
+
+    # warnings情報を取得
+    cursor.execute('''
+        SELECT id, timestamp, reason
+        FROM warnings
+        WHERE student_participation_id = (
+            SELECT id
+            FROM student_participations
+            WHERE student_subject_id = ? AND subject_count_id = ?
+        )
+    ''', (student_subject_id, session_id))
+    warnings = cursor.fetchall()
+
+    # eye_openness情報を取得
+    cursor.execute('''
+        SELECT id, timestamp, right_eye_openness, left_eye_openness
+        FROM eye_openness
+        WHERE student_participation_id = (
+            SELECT id
+            FROM student_participations
+            WHERE student_subject_id = ? AND subject_count_id = ?
+        )
+    ''', (student_subject_id, session_id))
+    eye_openness = cursor.fetchall()
+
+   
+
+    return render_template('teacher/lecture/session_student_details.html',
+                        student_info=student_info,
+                        lecture_totals=lecture_totals,
+                        participation_info=participation_info,
+                        attentions=attentions,
+                        warnings=warnings,
+                        eye_openness=eye_openness,
+                        session_id=session_id)
+

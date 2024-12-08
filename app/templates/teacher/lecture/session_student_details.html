@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生詳細情報</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<h1>学生詳細情報</h1>
+
+<!-- 学生の基本情報 -->
+<h2>学生情報</h2>
+{% if student_info %}
+<ul>
+    <li><strong>学生番号:</strong> {{ student_info[0] }}</li>
+    <li><strong>姓 (カナ):</strong> {{ student_info[1] }}</li>
+    <li><strong>名 (カナ):</strong> {{ student_info[2] }}</li>
+    <li><strong>姓:</strong> {{ student_info[3] }}</li>
+    <li><strong>名:</strong> {{ student_info[4] }}</li>
+</ul>
+{% else %}
+<p>学生情報が見つかりませんでした。</p>
+{% endif %}
+
+<!-- 講義全体の統計 -->
+<h2>講義全体の統計</h2>
+{% if lecture_totals %}
+<ul>
+    <li><strong>総注意回数:</strong> {{ lecture_totals[0] }}</li>
+    <li><strong>総警告回数:</strong> {{ lecture_totals[1] }}</li>
+</ul>
+{% else %}
+<p>講義情報が見つかりませんでした。</p>
+{% endif %}
+
+<!-- 出席情報 -->
+<h2>出席情報</h2>
+{% if participation_info %}
+<ul>
+    <li><strong>出席時間:</strong> {{ participation_info[0] or "未登録" }}</li>
+    <li><strong>退出時間:</strong> {{ participation_info[1] or "未登録" }}</li>
+    <li><strong>注意回数:</strong> {{ participation_info[2] }}</li>
+    <li><strong>警告回数:</strong> {{ participation_info[3] }}</li>
+</ul>
+{% else %}
+<p>出席情報が見つかりませんでした。</p>
+{% endif %}
+
+
+
+<!-- 注意情報 -->
+<h2>注意履歴</h2>
+{% if attentions and attentions|length > 0 %}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>タイムスタンプ</th>
+            <th>睡眠時間</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for attention in attentions %}
+        <tr>
+            <td>{{ attention[0] }}</td>
+            <td>{{ attention[1] }}</td>
+            <td>{{ attention[2] or "なし" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>注意履歴はありません。</p>
+{% endif %}
+
+<!-- 警告情報 -->
+<h2>警告履歴</h2>
+{% if warnings and warnings|length > 0 %}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>タイムスタンプ</th>
+            <th>理由</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for warning in warnings %}
+        <tr>
+            <td>{{ warning[0] }}</td>
+            <td>{{ warning[1] }}</td>
+            <td>{{ warning[2] or "なし" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>警告履歴はありません。</p>
+{% endif %}
+
+<!-- 開眼率情報 -->
+<h2>開眼率履歴</h2>
+{% if eye_openness and eye_openness|length > 0 %}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>タイムスタンプ</th>
+            <th>右目の開眼率</th>
+            <th>左目の開眼率</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for openness in eye_openness %}
+        <tr>
+            <td>{{ openness[0] }}</td>
+            <td>{{ openness[1] }}</td>
+            <td>{{ openness[2] }}%</td>
+            <td>{{ openness[3] }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>開眼率データはありません。</p>
+{% endif %}
+
+<a href="{{ url_for('app.teacher.lecture.session', session_id=session_id) }}">講義詳細に戻る</a>
+
+
+</body>
+</html>
+
+   
+
