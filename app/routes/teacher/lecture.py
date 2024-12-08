@@ -344,7 +344,7 @@ def session_student_details(session_id, student_id):
 
     # 学生基本情報を取得
     cursor.execute('''
-        SELECT student_number, kana_last_name, kana_first_name, last_name, first_name
+        SELECT student_number, kana_last_name, kana_first_name, last_name, first_name, face_photo
         FROM students
         WHERE id = ?
     ''', (student_id,))

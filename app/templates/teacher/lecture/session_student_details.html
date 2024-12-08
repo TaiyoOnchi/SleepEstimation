@@ -14,6 +14,8 @@
 <h2>学生情報</h2>
 {% if student_info %}
 <ul>
+    
+    <li><img src="data:image/jpeg;base64,{{ student_info.face_photo }}" alt="顔写真" /></li>
     <li><strong>学生番号:</strong> {{ student_info[0] }}</li>
     <li><strong>姓 (カナ):</strong> {{ student_info[1] }}</li>
     <li><strong>名 (カナ):</strong> {{ student_info[2] }}</li>
