@@ -46,12 +46,19 @@
                 <td>{{ student.exit_time }}</td>
                 <td>{{ student.attention_count }}</td>
                 <td>{{ student.warning_count }}</td>
-                <td><a href="{{ url_for('app.teacher.lecture.create_warning', student_id=student.id) }}">警告を送信</a></td>
+                <td>
+                    {% if not student.exit_time %}
+                        <a href="{{ url_for('app.teacher.lecture.create_warning', student_id=student.id) }}">警告を送信</a>
+                    {% else %}
+                        <span style="color: gray;">警告を送信</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     
+    <p><a href="{{ url_for('app.teacher.lecture.show', subject_id=lecture_session.subject_id) }}">講義情報に戻る</a></p>
     <p><a href="{{ url_for('app.teacher.dashboard.dashboard') }}">ダッシュボードに戻る</a></p>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
@@ -65,12 +72,11 @@
             
             socket.on('student_joined', function(data) {
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
-                if (!table) {
-                    console.error("Table not found!");
-                    return;
-                }
                 const newRow = table.insertRow();
-
+            
+                // 新しい行に学籍番号を識別する属性を付与
+                newRow.setAttribute('data-student-number', data.student_number);
+            
                 // 学籍番号セルにリンクを作成
                 const studentNumberCell = newRow.insertCell(0);
                 const studentLink = document.createElement('a');
@@ -84,13 +90,13 @@
                 newRow.insertCell(4).textContent = data.exit_time || 'None';
                 newRow.insertCell(5).textContent = data.attention_count;
                 newRow.insertCell(6).textContent = data.warning_count;
-                // 「警告を送信」ボタンを追加
                 const warningCell = newRow.insertCell(7);
                 const warningLink = document.createElement('a');
                 warningLink.href = `/teacher/create_warning?student_id=${data.id}`;
                 warningLink.textContent = '警告を送信';
                 warningCell.appendChild(warningLink);
             });
+            
 
             // 学生が退出した場合の処理
             socket.on('student_exited', function(data) {
@@ -98,6 +104,14 @@
                 const row = table.querySelector(`tr[data-student-number="${data.student_number}"]`);
                 if (row) {
                     row.cells[4].textContent = data.exit_time; // 退出時間を更新
+
+                    // 警告リンクを無効化
+                    const warningLink = row.cells[7].querySelector('a'); // 「警告を送信」リンクを取得
+                    if (warningLink) {
+                        warningLink.style.color = 'gray'; // 見た目を無効化
+                        warningLink.style.pointerEvents = 'none'; // クリック無効化
+                        warningLink.style.cursor = 'default'; // カーソルを変更
+                    }
                 }
             });
             

@@ -216,9 +216,7 @@ def session(session_id):
     cursor = conn.cursor()
 
     # session_idに基づいて講義回の詳細を取得
-    cursor.execute("""
-        SELECT * FROM subject_counts WHERE id = ?
-    """, (session_id,))
+    cursor.execute("SELECT * FROM subject_counts WHERE id = ?", (session_id,))
     lecture_session = cursor.fetchone()
 
     # 講義回に参加している学生の詳細を取得
