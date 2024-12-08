@@ -1,0 +1,35 @@
+<!-- header.html -->
+<header class="bg-black shadow-sm py-4">
+  <div class="container mx-auto px-4 flex justify-between items-center">
+      <!-- ロゴ -->
+      <a href="{% if current_user.is_authenticated and current_user.role == 'student' %} 
+                    {{ url_for('app.student.dashboard.dashboard') }}
+                {% elif current_user.is_authenticated and current_user.role == 'teacher' %} 
+                    {{ url_for('app.teacher.dashboard.dashboard') }}
+                {% else %} 
+                    {{ url_for('app.home.top.top') }}
+                {% endif %}" 
+         class="text-2xl font-bold text-blue-600">
+          EORシステム
+      </a>
+
+      <nav>
+          {% if current_user.is_authenticated %}
+              <!-- ログイン済み -->
+              {% if current_user.role == 'student' %}
+                  <a href="{{ url_for('app.student.lecture.register') }}" class="mx-4 text-white hover:text-blue-600">履修科目一覧</a>
+                  <a href="{{ url_for('app.student.lecture.join') }}" class="mx-4 text-white hover:text-blue-600">講義に参加する</a>
+                  <a href="{{ url_for('app.auth.logout') }}" class="mx-4 text-white hover:text-blue-600">ログアウト</a>
+              {% elif current_user.role == 'teacher' %}
+                  <a href="{{ url_for('app.auth.logout') }}" class="mx-4 text-white hover:text-blue-600">ログアウト</a>
+              {% endif %}
+          {% else %}
+              <!-- 未ログイン -->
+              <a href="{{ url_for('app.student.register.register') }}" class="mx-4 text-white hover:text-blue-600">学生サインアップ</a>
+              <a href="{{ url_for('app.student.login.login') }}" class="mx-4 text-white hover:text-blue-600">学生ログイン</a>
+              <a href="{{ url_for('app.teacher.register.register') }}" class="mx-4 text-white hover:text-blue-600">教員サインアップ</a>
+              <a href="{{ url_for('app.teacher.login.login') }}" class="mx-4 text-white hover:text-blue-600">教員ログイン</a>
+          {% endif %}
+      </nav>
+  </div>
+</header>

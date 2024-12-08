@@ -6,8 +6,8 @@
     <title>学生プロフィール</title>
 </head>
 <body>
+
     <h1>学生プロフィール</h1>
-    
     {% if student %}
         <p>学籍番号: {{ student.student_number }}</p>
         <p>名前: {{ student.last_name }} {{ student.first_name }}</p>

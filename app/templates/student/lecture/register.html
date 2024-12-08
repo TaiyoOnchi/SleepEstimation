@@ -4,20 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>講義情報登録</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
 </head>
-<body>
-    <h1>講義情報登録</h1>
-    <form method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <label for="subject_name">講義を選択:</label>
-        <select id="subject_name" name="subject_name" required>
-            {% for subject in subjects %}
-                <option value="{{ subject['subject_name'] }}">{{ subject['subject_name'] }}</option>
-            {% endfor %}
-        </select><br><br>
-        <button type="submit">登録</button>
-    </form>
-    
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- ヘッダー -->
+    {% include 'partials/header.html' %}
+
+    <!-- メインコンテンツ -->
+    <div class="container mx-auto px-4 py-12 flex justify-center">
+        <div class="bg-white rounded-lg shadow-md p-6 max-w-xl w-full">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">講義情報登録</h1>
+
+            <form method="POST" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label for="subject_name" class="block text-gray-700 font-medium">講義を選択:</label>
+                <select id="subject_name" name="subject_name" required class="w-full border rounded-lg px-3 py-2">
+                    {% for subject in subjects %}
+                        <option value="{{ subject['subject_name'] }}">{{ subject['subject_name'] }}</option>
+                    {% endfor %}
+                </select><br><br>
+
+                <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700">
+                    登録
+                </button>
+            </form>
+        </div>
+    </div>
 
 </body>
 </html>
