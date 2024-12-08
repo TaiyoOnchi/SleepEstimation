@@ -8,27 +8,7 @@ from app import socketio
 lecture_bp = Blueprint('lecture', __name__)
 
 
-@lecture_bp.route('/lecture', methods=['GET', 'POST'])
-@student_required
-def lecture():
-    #print(f"Current user role: {current_user.role}", flush=True)
 
-
-    if 'student_info' in session:
-        session.pop('student_info', None)
-
-    if request.method == 'POST':
-        classroom = request.form.get('classroom')
-        seat_number = request.form.get('seat_number')
-        period = request.form.get('period')
-
-        session['classroom'] = classroom
-        session['seat_number'] = seat_number
-        session['period'] = period
-
-        return redirect(url_for('app.student.main.main'))
-
-    return render_template('student/lecture.html')
 
 
 @lecture_bp.route('/lecture/register', methods=['GET', 'POST'])

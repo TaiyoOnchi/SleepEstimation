@@ -72,9 +72,9 @@ def init_db():
             student_id INTEGER NOT NULL,
             subject_id INTEGER NOT NULL,
             average_eor REAL,
-            total_sleep_time TIME DEFAULT '00:00:00',
-            total_attentions INTEGER DEFAULT 0,
-            total_warnings INTEGER DEFAULT 0,
+            total_sleep_time TIME DEFAULT '00:00:00' NOT NULL,
+            total_attentions INTEGER DEFAULT 0 NOT NULL,
+            total_warnings INTEGER DEFAULT 0 NOT NULL,
             FOREIGN KEY (student_id) REFERENCES students(id),
             FOREIGN KEY (subject_id) REFERENCES subjects(id)
         )
@@ -92,10 +92,10 @@ def init_db():
             session_number INTEGER,
             seat_number INTEGER,
             average_eor REAL,
-            attendance_time DATETIME,
+            attendance_time DATETIME NOT NULL,
             exit_time DATETIME,
-            attention_count INTEGER DEFAULT 0,
-            warning_count INTEGER DEFAULT 0,
+            attention_count INTEGER DEFAULT 0 NOT NULL,
+            warning_count INTEGER DEFAULT 0 NOT NULL,
             FOREIGN KEY (student_subject_id) REFERENCES student_subjects(id),
             FOREIGN KEY (subject_count_id) REFERENCES subject_counts(id)
         )
@@ -106,8 +106,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS attentions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_participation_id INTEGER NOT NULL,
-            timestamp DATETIME,
-            sleep_time TIME DEFAULT '00:00:00',
+            timestamp DATETIME NOT NULL,
+            sleep_time TIME DEFAULT '00:00:00' NOT NULL,
             FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
         )
     ''')
@@ -117,8 +117,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS warnings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_participation_id INTEGER NOT NULL,
-            timestamp DATETIME,
-            reason TEXT,
+            timestamp DATETIME NOT NULL,
+            reason TEXT NOT NULL,
             FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
         )
     ''')
@@ -128,9 +128,9 @@ def init_db():
         CREATE TABLE IF NOT EXISTS eye_openness (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_participation_id INTEGER NOT NULL,
-            timestamp DATETIME,
-            right_eye_openness INTEGER,
-            left_eye_openness INTEGER,
+            timestamp DATETIME NOT NULL,
+            right_eye_openness INTEGER NOT NULL,
+            left_eye_openness INTEGER NOT NULL,
             FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
         )
     ''')

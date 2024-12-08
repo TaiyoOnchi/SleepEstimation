@@ -316,7 +316,11 @@ def submit_warning():
     conn.commit()
     print(f'学籍番号{student_number}')
     # 学生に警告を通知
-    socketio.emit('low_eye_openness_alert', {'message': f'教員から警告が送信されました。理由：{reason}'}, room=student_number)
+    socketio.emit(
+        'low_eye_openness_alert', 
+        {'message': f'教員から警告が送信されました。\n理由：{reason}'}, 
+        room=student_number
+    )
 
     flash("警告が作成されました", "success")
     return redirect(url_for('app.teacher.lecture.session',session_id=participation_id))
