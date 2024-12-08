@@ -193,7 +193,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 }, room=teacher_room)
                 
         # 三回連続で閾値以下の場合、通知を表示
-        elif low_eye_openness_count[student_number] % 3 == 0:
+        elif low_eye_openness_count[student_number] > 0 and low_eye_openness_count[student_number] % 3 == 0:
             socketio.emit('low_eye_openness_alert', {'message': '開眼率が低下しています！'}, room=student_number)
 
 
@@ -203,6 +203,10 @@ def monitor_eye_openness(data):  # 開眼率測定
         print("開眼率取得失敗")
         # 開眼率取得失敗時のカウントをインクリメント
         failed_eye_openness_count[student_number] += 1
+        socketio.emit('eye_openness_update', {
+            'avgEyeOpenness': None,  # 測定できない場合はNullを送信
+            'eroThreshold': ero_threshold
+        }, room=student_number)
 
         # 開眼率取得失敗が10回連続の場合、通知を送信
         if failed_eye_openness_count[student_number] == 10:
@@ -248,7 +252,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 }, room=teacher_room)
                 
         # 開眼率取得失敗が5回連続の場合、通知を送信
-        elif failed_eye_openness_count[student_number] % 5 == 0:
+        elif failed_eye_openness_count[student_number] > 0 and failed_eye_openness_count[student_number] % 5 == 0:
             socketio.emit('low_eye_openness_alert', {'message': '開眼率の検出に失敗しています。カメラの状態を確認してください。'}, room=student_number)
 
 

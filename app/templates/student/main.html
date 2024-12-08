@@ -29,8 +29,11 @@
                 </div>
                 <div class="bg-white px-3 py-2 rounded shadow-sm">
                     <span class="text-sm text-gray-600">今回の警告回数:</span>
-                    <span id="warning-count" class="ml-2 font-medium">{{ warning_count }}</span>
-                </div>
+                    <a href="{{ url_for('app.student.lecture.warnings', participation_id=student_participation_id) }}" 
+                       class="ml-2 font-medium text-blue-500 hover:underline">
+                        {{ warning_count }}
+                    </a>
+                </div>                
             </div>
         </div>
         
@@ -178,7 +181,10 @@
         
             const videoContainer = document.getElementById('video-container');
         
-            if (avgEyeOpenness >= warningThreshold) {
+            if (avgEyeOpenness === null || avgEyeOpenness === undefined) {
+                // 開眼率が測定されていない場合、枠を灰色に設定
+                videoContainer.className = 'border-8 border-gray-300 rounded-lg mb-4';
+            } else if (avgEyeOpenness >= warningThreshold) {
                 videoContainer.className = 'border-8 border-green-500 rounded-lg mb-4';
             } else if (avgEyeOpenness >= eroThreshold) {
                 videoContainer.className = 'border-8 border-yellow-500 rounded-lg mb-4';
@@ -186,6 +192,7 @@
                 videoContainer.className = 'border-8 border-red-500 rounded-lg mb-4';
             }
         });
+        
 
         // サーバーからの警告メッセージを受信したら通知を表示
         socket.on('low_eye_openness_alert', function(data) {
