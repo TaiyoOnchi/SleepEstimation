@@ -134,6 +134,7 @@
                 video.srcObject = stream;
             })
             .catch(error => {
+                alert('カメラにアクセスできません。ブラウザの設定でカメラアクセスを許可してください。');
                 console.error("カメラの使用を許可してください。", error);
             });
         
@@ -151,7 +152,7 @@
             // 画像データを取得し、サーバーに送信
             const imageData = canvas.toDataURL('image/jpeg');
             socket.emit('monitor_eye_openness', { imageData: imageData, student_participation_id: student_participation_id });
-        }, 5000); // 5秒間隔で送信
+        }, 1000); // 5秒間隔で送信
 
         // サーバーからの画像データを受信して表示（必要ならば）
         socket.on('image_update', function(imageData) {
