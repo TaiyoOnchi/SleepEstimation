@@ -16,7 +16,7 @@ def main():
 
     # 学生が参加中の講義情報を取得
     cursor.execute('''
-        SELECT sp.id, sc.classroom, sc.day_of_week, sc.period, sc.start_time, sc.subject_id
+        SELECT sp.id, sc.classroom, sc.day_of_week, sc.period, sc.start_time, sc.subject_id, sp.seat_number
         FROM student_participations sp
         JOIN subject_counts sc ON sp.subject_count_id = sc.id
         WHERE sp.student_subject_id IN (
@@ -36,11 +36,12 @@ def main():
             "start_time": lecture_info[4]
         }
         subject_id = lecture_info[5]  # subject_id を取得
+        seat_number = lecture_info[6]  # 座席番号を取得
     else:
         student_participation_id = None
         current_lecture = {}
         subject_id = None  # デフォルト値またはエラーハンドリング
-
+        seat_number = None  # 座席番号のデフォルト値
 
     # student_subjects の情報を取得
     cursor.execute('''
@@ -64,14 +65,13 @@ def main():
     attention_count = participation_stats[0] if participation_stats else 0
     warning_count = participation_stats[1] if participation_stats else 0
 
-    seat_number = session.get('seat_number', '未登録')
 
     return render_template('student/main.html',
-        seat_number=seat_number,
         student_participation_id=student_participation_id,
         current_lecture=current_lecture,
         total_attentions=total_attentions,
         total_warnings=total_warnings,
         attention_count=attention_count,
-        warning_count=warning_count
+        warning_count=warning_count,
+        seat_number=seat_number  # 座席番号をテンプレートに渡す
     )

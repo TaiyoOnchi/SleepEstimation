@@ -221,8 +221,7 @@ def session(session_id):
 
     # 講義回に参加している学生の詳細を取得
     cursor.execute("""
-        SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_last_name,student_participations.attendance_time,
-               student_participations.exit_time, student_participations.attention_count, student_participations.warning_count
+        SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_last_name,student_participations.attendance_time, student_participations.exit_time, student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
         FROM student_participations
         JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
         JOIN students ON student_subjects.student_id = students.id
@@ -271,7 +270,7 @@ def submit_warning():
     cursor = conn.cursor()
     
     cursor.execute('''
-        SELECT sp.id
+        SELECT sp.id, sp.subject_count_id
         FROM student_participations sp
         JOIN student_subjects ss ON sp.student_subject_id = ss.id
         JOIN students ON ss.student_id = students.id
@@ -286,6 +285,8 @@ def submit_warning():
 
     # `fetchone()`はタプルを返すので、最初の値を取得
     participation_id = result[0]
+    subject_counts_id = result[1]
+    
     
     # 注意回数が記録された際の処理
     cursor.execute('''
@@ -321,7 +322,7 @@ def submit_warning():
     )
 
     flash("警告が作成されました", "success")
-    return redirect(url_for('app.teacher.lecture.session',session_id=participation_id))
+    return redirect(url_for('app.teacher.lecture.session',session_id=subject_counts_id))
 
 
 

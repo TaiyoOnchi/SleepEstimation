@@ -64,8 +64,6 @@ def join():
         AND sp.exit_time IS NULL
     ''', (current_user.id,))
     active_participation = cursor.fetchone()
-    
-    
 
     if active_participation:
         return redirect(url_for('app.student.main.main', 
@@ -88,9 +86,10 @@ def join():
         return render_template('student/dashboard.html', alert_message="現在、開講中の講義はありません。(※開講中の講義に出席するには、履修登録から講義を選択してください)", alert_type="warning")
 
     if request.method == 'POST':
-        # 学生が参加コードで講義に参加する処理
         join_code = request.form.get('join_code')
         session_id = request.form.get('session_id')
+        seat_number = request.form.get('seat_number')  # 座席番号を取得
+
         # session_id が選択されているか確認
         if not session_id:
             flash("講義を選択してください。", "error")
@@ -110,89 +109,81 @@ def join():
         session_result = cursor.fetchone()
 
         if session_result:
-            # 学生を講義に参加させるロジック
-            # 既存の参加記録を確認
+            # 座席番号が他の学生と被らないか確認
+            # --- 座席番号の重複チェック ---
             cursor.execute('''
-                SELECT id
+                SELECT seat_number
                 FROM student_participations
-                WHERE student_subject_id = (
-                    SELECT id FROM student_subjects WHERE student_id = ? AND subject_id = (
-                        SELECT subject_id FROM subject_counts WHERE id = ?
-                    )
+                WHERE subject_count_id = ? AND seat_number = ?
+            ''', (session_id, seat_number))
+            existing_seat = cursor.fetchone()
+
+            if existing_seat:
+                flash("選択した座席番号はすでに使用されています。別の番号を選択してください。", "error")
+                return redirect(url_for('app.student.lecture.join'))
+            # -------------------------
+
+            # 新しい参加記録を作成
+            cursor.execute('''
+                INSERT INTO student_participations (student_subject_id, subject_count_id, attendance_time, seat_number)
+                SELECT student_subjects.id, ? AS subject_count_id, datetime('now'), ? AS seat_number
+                FROM student_subjects
+                WHERE student_subjects.student_id = ? AND student_subjects.subject_id = (
+                    SELECT subject_id FROM subject_counts WHERE id = ?
                 )
-                AND subject_count_id = ?
-            ''', (current_user.id, session_id, session_id))
-            existing_participation = cursor.fetchone()
+            ''', (session_id, seat_number, current_user.id, session_id))
+            conn.commit()
 
-            if existing_participation:
-                # 既に参加している場合
-                return redirect(url_for('app.student.lecture.join', 
-                                alert_message="この講義はすでに退出済みです", 
-                                alert_type="error"))
-            else:
-                # 新しい参加記録を作成
-                cursor.execute('''
-                    INSERT INTO student_participations (student_subject_id, subject_count_id, attendance_time)
-                    SELECT student_subjects.id, ? AS subject_count_id, datetime('now')
-                    FROM student_subjects
-                    WHERE student_subjects.student_id = ? AND student_subjects.subject_id = (
-                        SELECT subject_id FROM subject_counts WHERE id = ?
-                    )
-                ''', (session_id, current_user.id, session_id))
-                conn.commit()
-                
-                    # 参加した学生の詳細を取得
-                cursor.execute("""
-                    SELECT students.id, students.student_number, students.last_name, students.first_name,
-                        students.kana_last_name, students.kana_first_name,
-                        student_participations.attendance_time, student_participations.exit_time,
-                        student_participations.attention_count, student_participations.warning_count
-                    FROM student_participations
-                    JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
-                    JOIN students ON student_subjects.student_id = students.id
-                    WHERE student_participations.subject_count_id = ? AND student_subjects.student_id = ?
-                """, (session_id, current_user.id))
-                student_data = cursor.fetchone()
-
-                # 講義に紐づく教員のIDを取得
-                cursor.execute('''
-                    SELECT teachers.id
-                    FROM teachers
-                    JOIN subjects ON teachers.id = subjects.teacher_id
-                    JOIN subject_counts ON subjects.id = subject_counts.subject_id
-                    WHERE subject_counts.id = ?
-                ''', (session_id,))
-                teacher_data = cursor.fetchone()
-
-                if not teacher_data:
-                    flash("教員情報が見つかりません。", "error")
-                    return redirect(url_for('app.student.lecture.join'))
-
-                teacher_id = teacher_data[0]
-                socketio.emit('student_joined', {
-                    'id': student_data[0],
-                    'student_number': student_data[1],
-                    'last_name': student_data[2],  
-                    'first_name': student_data[3], 
-                    'kana_last_name': student_data[4],
-                    'kana_first_name': student_data[5],
-                    'attendance_time': student_data[6],
-                    'exit_time': student_data[7],
-                    'attention_count': student_data[8],
-                    'warning_count': student_data[9],
-                }, room=f"teacher_{teacher_id}")  # ルーム名を動的に生成
+            # 参加した学生の詳細を取得
+            cursor.execute("""
+                SELECT students.id, students.student_number, students.last_name, students.first_name,
+                    students.kana_last_name, students.kana_first_name,
+                    student_participations.attendance_time, student_participations.exit_time,
+                    student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
+                FROM student_participations
+                JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
+                JOIN students ON student_subjects.student_id = students.id
+                WHERE student_participations.subject_count_id = ? AND student_subjects.student_id = ?
+            """, (session_id, current_user.id))
+            student_data = cursor.fetchone()
 
 
+            cursor.execute('''
+                SELECT teachers.id
+                FROM teachers
+                JOIN subjects ON teachers.id = subjects.teacher_id
+                JOIN subject_counts ON subjects.id = subject_counts.subject_id
+                WHERE subject_counts.id = ?
+            ''', (session_id,))
+            teacher_data = cursor.fetchone()
 
+            if not teacher_data:
+                flash("教員情報が見つかりません。", "error")
+                return redirect(url_for('app.student.lecture.join'))
 
+            teacher_id = teacher_data[0]
+            socketio.emit('student_joined', {
+                'id': student_data[0],
+                'student_number': student_data[1],
+                'last_name': student_data[2],  
+                'first_name': student_data[3], 
+                'kana_last_name': student_data[4],
+                'kana_first_name': student_data[5],
+                'attendance_time': student_data[6],
+                'exit_time': student_data[7],
+                'attention_count': student_data[8],
+                'warning_count': student_data[9],
+                'seat_number': student_data[10],
+            }, room=f"teacher_{teacher_id}")  # ルーム名を動的に生成
 
-                return redirect(url_for('app.student.main.main', 
-                                alert_message="講義に参加しました", 
-                                alert_type="error"))
+            return redirect(url_for('app.student.main.main', 
+                                    alert_message="講義に参加しました", 
+                                    alert_type="success"))
         else:
             flash("無効な参加コードです。", "error")
 
     return render_template('student/lecture/join.html', active_lectures=active_lectures)
+
 
 
 @lecture_bp.route('/lecture/exit', methods=['POST'])

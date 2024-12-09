@@ -29,8 +29,7 @@
                 </div>
                 <div class="bg-white px-3 py-2 rounded shadow-sm">
                     <span class="text-sm text-gray-600">今回の警告回数:</span>
-                    <a href="{{ url_for('app.student.lecture.warnings', participation_id=student_participation_id) }}" 
-                       class="ml-2 font-medium text-blue-500 hover:underline">
+                    <a href="{{ url_for('app.student.lecture.warnings', participation_id=student_participation_id) }}" id="warning-count" class="ml-2 font-medium text-blue-500 hover:underline">
                         {{ warning_count }}
                     </a>
                 </div>                
@@ -41,7 +40,6 @@
             
             <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">メインページ</h1>
 
-            <!-- 現在参加している講義の情報 -->
             {% if current_lecture %}
                 <div class="bg-gray-50 rounded-lg p-3 mb-2">
                     <h2 class="text-lg font-semibold text-gray-700 mb-2">現在参加中の講義</h2>
@@ -62,30 +60,18 @@
                             <span class="text-sm text-gray-600">開始時間:</span>
                             <span class="ml-2 font-medium">{{ current_lecture.start_time }}</span>
                         </div>
+                        <!-- 座席番号の追加 -->
+                        <div class="bg-white px-3 py-2 rounded shadow-sm">
+                            <span class="text-sm text-gray-600">座席番号:</span>
+                            <span class="ml-2 font-medium">{{ seat_number }}</span>
+                        </div>
                     </div>
                 </div>
             {% else %}
                 <p>現在参加中の講義はありません。</p>
             {% endif %}
 
-            <!-- 既存の情報表示セクション -->
-            <div class="bg-gray-50 rounded-lg p-3 mb-2">
-                <h2 class="text-lg font-semibold text-gray-700 mb-2">講義情報</h2>
-                <div class="grid grid-cols-3 gap-2">
-                    <div class="bg-white px-3 py-2 rounded shadow-sm">
-                        <span class="text-sm text-gray-600">教室:</span>
-                        <span class="ml-2 font-medium">{{ classroom }}</span>
-                    </div>
-                    <div class="bg-white px-3 py-2 rounded shadow-sm">
-                        <span class="text-sm text-gray-600">座席:</span>
-                        <span class="ml-2 font-medium">{{ seat_number }}</span>
-                    </div>
-                    <div class="bg-white px-3 py-2 rounded shadow-sm">
-                        <span class="text-sm text-gray-600">時限:</span>
-                        <span class="ml-2 font-medium">{{ period }}</span>
-                    </div>
-                </div>
-            </div>
+
         </div>
 
         <!-- ビデオ表示エリア -->
@@ -152,7 +138,7 @@
             // 画像データを取得し、サーバーに送信
             const imageData = canvas.toDataURL('image/jpeg');
             socket.emit('monitor_eye_openness', { imageData: imageData, student_participation_id: student_participation_id });
-        }, 1000); // 5秒間隔で送信
+        }, 5000); // 5秒間隔で送信
 
         // サーバーからの画像データを受信して表示（必要ならば）
         socket.on('image_update', function(imageData) {

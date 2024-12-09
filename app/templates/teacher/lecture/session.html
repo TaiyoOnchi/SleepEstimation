@@ -27,6 +27,7 @@
                 <th>学籍番号</th>
                 <th>カナ</th>
                 <th>氏名</th>
+                <th>座席番号</th>
                 <th>出席時刻</th>
                 <th>退席時刻</th>
                 <th>注意回数</th>
@@ -42,6 +43,7 @@
                 </td>
                 <td>{{ student.last_name }} {{ student.first_name }}</td>
                 <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
+                <td>{{ student.seat_number }}</td>
                 <td>{{ student.attendance_time }}</td>
                 <td>{{ student.exit_time }}</td>
                 <td>{{ student.attention_count }}</td>
@@ -86,11 +88,12 @@
                 
                 newRow.insertCell(1).textContent = `${data.kana_last_name} ${data.kana_first_name}`;
                 newRow.insertCell(2).textContent = `${data.last_name} ${data.first_name}`;
-                newRow.insertCell(3).textContent = data.attendance_time;
-                newRow.insertCell(4).textContent = data.exit_time || 'None';
-                newRow.insertCell(5).textContent = data.attention_count;
-                newRow.insertCell(6).textContent = data.warning_count;
-                const warningCell = newRow.insertCell(7);
+                newRow.insertCell(3).textContent = data.seat_number;
+                newRow.insertCell(4).textContent = data.attendance_time;
+                newRow.insertCell(5).textContent = data.exit_time || 'None';
+                newRow.insertCell(6).textContent = data.attention_count;
+                newRow.insertCell(7).textContent = data.warning_count;
+                const warningCell = newRow.insertCell(8);
                 const warningLink = document.createElement('a');
                 warningLink.href = `/teacher/create_warning?student_id=${data.id}`;
                 warningLink.textContent = '警告を送信';
@@ -103,10 +106,10 @@
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
                 const row = table.querySelector(`tr[data-student-number="${data.student_number}"]`);
                 if (row) {
-                    row.cells[4].textContent = data.exit_time; // 退出時間を更新
+                    row.cells[5].textContent = data.exit_time; // 退出時間を更新
 
                     // 警告リンクを無効化
-                    const warningLink = row.cells[7].querySelector('a'); // 「警告を送信」リンクを取得
+                    const warningLink = row.cells[8].querySelector('a'); // 「警告を送信」リンクを取得
                     if (warningLink) {
                         warningLink.style.color = 'gray'; // 見た目を無効化
                         warningLink.style.pointerEvents = 'none'; // クリック無効化
@@ -121,7 +124,7 @@
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
                 for (let row of table.rows) {
                     if (row.cells[0].textContent === data.student_number) {
-                        row.cells[5].textContent = data.attention_count; // 注意回数を更新
+                        row.cells[6].textContent = data.attention_count; // 注意回数を更新
                         return;
                     }
                 }
@@ -132,7 +135,7 @@
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
                 for (let row of table.rows) {
                     if (row.cells[0].textContent === data.student_number) {
-                        row.cells[6].textContent = data.warning_count; // 警告回数を更新
+                        row.cells[7].textContent = data.warning_count; // 警告回数を更新
                         return;
                     }
                 }
