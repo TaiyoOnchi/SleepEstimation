@@ -18,32 +18,55 @@ def register():
     cursor = conn.cursor()
 
     if request.method == 'POST':
-        subject_name = request.form.get('subject_name')
-        cursor.execute('SELECT id FROM subjects WHERE subject_name = ?', (subject_name,))
-        subject = cursor.fetchone()
-
-        if not subject:
-            flash("講義が見つかりません。", "error")
-            return redirect(url_for('app.student.lecture.register'))
-
-        # 履修登録
-        cursor.execute('''
-            INSERT INTO student_subjects (student_id, subject_id)
-            SELECT ?, ?
-            WHERE NOT EXISTS (
-                SELECT 1 FROM student_subjects WHERE student_id = ? AND subject_id = ?
-            )
-        ''', (current_user.id, subject['id'], current_user.id, subject['id']))
+        subject_ids = request.form.getlist('subject_ids')
+        for subject_id in subject_ids:
+            cursor.execute('''
+                INSERT INTO student_subjects (student_id, subject_id)
+                SELECT ?, ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM student_subjects WHERE student_id = ? AND subject_id = ?
+                )
+            ''', (current_user.id, subject_id, current_user.id, subject_id))
         conn.commit()
 
-        flash("講義を履修登録しました。", "success")
-        return redirect(url_for('app.student.dashboard.dashboard'))
+        flash("選択した講義を履修登録しました。", "success")
+        return redirect(url_for('app.student.lecture.register'))
 
-    # 講義リストを取得
-    cursor.execute('SELECT subject_name FROM subjects')
+    # 履修済みの講義を取得
+    cursor.execute('''
+        SELECT 
+            s.subject_name, 
+            s.default_classroom, 
+            s.default_day_of_week, 
+            s.default_period,
+            ss.total_attentions,
+            ss.total_warnings,
+            (SELECT COUNT(*) 
+             FROM student_participations sp 
+             JOIN subject_counts sc ON sp.subject_count_id = sc.id
+             WHERE sp.student_subject_id = ss.id) AS attendance_count
+        FROM subjects s
+        JOIN student_subjects ss ON s.id = ss.subject_id
+        WHERE ss.student_id = ?
+    ''', (current_user.id,))
+    registered_subjects = cursor.fetchall()
+
+    # ユーザーが履修していない講義を取得
+    cursor.execute('''
+        SELECT s.id, s.subject_name, s.default_classroom, s.default_day_of_week, s.default_period
+        FROM subjects s
+        WHERE NOT EXISTS (
+            SELECT 1 FROM student_subjects ss
+            WHERE ss.subject_id = s.id AND ss.student_id = ?
+        )
+    ''', (current_user.id,))
     subjects = cursor.fetchall()
 
-    return render_template('student/lecture/register.html', subjects=subjects)
+    return render_template('student/lecture/register.html', 
+                           registered_subjects=registered_subjects, 
+                           subjects=subjects)
+
+
 
 
 @lecture_bp.route('/lecture/join', methods=['GET', 'POST'])
