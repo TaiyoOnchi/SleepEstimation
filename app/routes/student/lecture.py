@@ -166,8 +166,7 @@ def join():
             cursor.execute("""
                 SELECT students.id, students.student_number, students.last_name, students.first_name,
                     students.kana_last_name, students.kana_first_name,
-                    student_participations.attendance_time, student_participations.exit_time,
-                    student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
+                    student_participations.attendance_time, student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
                 FROM student_participations
                 JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
                 JOIN students ON student_subjects.student_id = students.id
@@ -198,10 +197,9 @@ def join():
                 'kana_last_name': student_data[4],
                 'kana_first_name': student_data[5],
                 'attendance_time': student_data[6],
-                'exit_time': student_data[7],
-                'attention_count': student_data[8],
-                'warning_count': student_data[9],
-                'seat_number': student_data[10],
+                'attention_count': student_data[7],
+                'warning_count': student_data[8],
+                'seat_number': student_data[9],
             }, room=f"teacher_{teacher_id}")  # ルーム名を動的に生成
 
             return redirect(url_for('app.student.main.main', 
@@ -214,85 +212,85 @@ def join():
 
 
 
-@lecture_bp.route('/lecture/exit', methods=['POST'])
-@student_required
-def exit():
-    conn = current_app.get_db()
-    cursor = conn.cursor()
+# @lecture_bp.route('/lecture/exit', methods=['POST'])
+# @student_required
+# def exit():
+#     conn = current_app.get_db()
+#     cursor = conn.cursor()
 
-    cursor.execute('''
-        SELECT sp.id, sp.subject_count_id, students.student_number
-        FROM student_participations sp
-        JOIN student_subjects ss ON sp.student_subject_id = ss.id
-        JOIN students ON ss.student_id = students.id
-        WHERE ss.student_id = ?
-        AND sp.exit_time IS NULL
-    ''', (current_user.id,))
-    active_participation = cursor.fetchone()
+#     cursor.execute('''
+#         SELECT sp.id, sp.subject_count_id, students.student_number
+#         FROM student_participations sp
+#         JOIN student_subjects ss ON sp.student_subject_id = ss.id
+#         JOIN students ON ss.student_id = students.id
+#         WHERE ss.student_id = ?
+#         AND sp.exit_time IS NULL
+#     ''', (current_user.id,))
+#     active_participation = cursor.fetchone()
 
 
-    if not active_participation:
-        flash("現在参加中の講義がありません。", "error")
+#     if not active_participation:
+#         flash("現在参加中の講義がありません。", "error")
 
-    # elif len(active_participations) > 1:
-    #     flash("複数の講義が未退出状態です。管理者に連絡してください。","error")
+#     # elif len(active_participations) > 1:
+#     #     flash("複数の講義が未退出状態です。管理者に連絡してください。","error")
 
-        # # 追加処理: 教員に通知
-        # cursor.execute('''
-        #     SELECT ss.subject_id, sp.seat_number
-        #     FROM student_participations sp
-        #     JOIN student_subjects ss ON sp.student_subject_id = ss.id
-        #     WHERE sp.id = ?
-        # ''', (participation['id'],))
-        # subject_info = cursor.fetchone()
+#         # # 追加処理: 教員に通知
+#         # cursor.execute('''
+#         #     SELECT ss.subject_id, sp.seat_number
+#         #     FROM student_participations sp
+#         #     JOIN student_subjects ss ON sp.student_subject_id = ss.id
+#         #     WHERE sp.id = ?
+#         # ''', (participation['id'],))
+#         # subject_info = cursor.fetchone()
 
-        # if subject_info:
-        #     subject_id = subject_info['subject_id']
-        #     seat_number = subject_info['seat_number']
+#         # if subject_info:
+#         #     subject_id = subject_info['subject_id']
+#         #     seat_number = subject_info['seat_number']
 
-        #     # WebSocketを利用して通知を送信（例: Socket.IO）
-        #     from app import socketio
-        #     socketio.emit('student_exit', {
-        #         'student_id': current_user.id,
-        #         'subject_id': subject_id,
-        #         'seat_number': seat_number
-        #     }, broadcast=True)
+#         #     # WebSocketを利用して通知を送信（例: Socket.IO）
+#         #     from app import socketio
+#         #     socketio.emit('student_exit', {
+#         #         'student_id': current_user.id,
+#         #         'subject_id': subject_id,
+#         #         'seat_number': seat_number
+#         #     }, broadcast=True)
 
-        # セッションにアラートメッセージを設定
-        # 講義から退出する
-    else:
-        # 講義から退出する
-        participation_id, session_id, student_number = active_participation
+#         # セッションにアラートメッセージを設定
+#         # 講義から退出する
+#     else:
+#         # 講義から退出する
+#         participation_id, session_id, student_number = active_participation
 
-        # 退出時間を更新
-        exit_time = datetime.now()
-        cursor.execute('''
-            UPDATE student_participations
-            SET exit_time = ?
-            WHERE id = ?
-        ''', (exit_time, participation_id))
-        conn.commit()
+#         # 退出時間を更新
+#         exit_time = datetime.now()
+#         cursor.execute('''
+#             UPDATE student_participations
+#             SET exit_time = ?
+#             WHERE id = ?
+#         ''', (exit_time, participation_id))
+#         conn.commit()
 
-        # 教員のIDを取得
-        cursor.execute('''
-            SELECT teachers.id
-            FROM teachers
-            JOIN subjects ON teachers.id = subjects.teacher_id
-            JOIN subject_counts ON subjects.id = subject_counts.subject_id
-            WHERE subject_counts.id = ?
-        ''', (session_id,))
-        teacher_data = cursor.fetchone()
+#         # 教員のIDを取得
+#         cursor.execute('''
+#             SELECT teachers.id
+#             FROM teachers
+#             JOIN subjects ON teachers.id = subjects.teacher_id
+#             JOIN subject_counts ON subjects.id = subject_counts.subject_id
+#             WHERE subject_counts.id = ?
+#         ''', (session_id,))
+#         teacher_data = cursor.fetchone()
 
-        if teacher_data:
-            teacher_id = teacher_data[0]
-            socketio.emit('student_exited', {
-                'student_number': student_number,
-                'exit_time': exit_time.strftime('%Y-%m-%d %H:%M:%S')
-            }, room=f"teacher_{teacher_id}")
+#         if teacher_data:
+#             teacher_id = teacher_data[0]
+#             socketio.emit('student_exited', {
+#                 'student_number': student_number,
+#                 'exit_time': exit_time.strftime('%Y-%m-%d %H:%M:%S')
+#             }, room=f"teacher_{teacher_id}")
 
-        flash("講義から退出しました", "success")
+#         flash("講義から退出しました", "success")
 
-    return redirect(url_for('app.student.dashboard.dashboard'))
+#     return redirect(url_for('app.student.dashboard.dashboard'))
 
 
 

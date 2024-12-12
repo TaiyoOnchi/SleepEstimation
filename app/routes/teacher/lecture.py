@@ -124,25 +124,68 @@ def start_session(subject_id):
 def end_session(session_id):
     conn = current_app.get_db()
     cursor = conn.cursor()
-    
+
     # 現在時刻を取得
     end_time = datetime.now()
-    
+
     # アクティブな講義を終了する
-    cursor.execute("UPDATE subject_counts SET end_time = ? WHERE id = ? AND end_time IS NULL", (end_time, session_id,))
-    conn.commit()
+    cursor.execute(
+        """
+        UPDATE subject_counts 
+        SET end_time = ? 
+        WHERE id = ? AND end_time IS NULL
+        """,
+        (end_time, session_id,)
+    )
     
+    # 参加している学生の学籍番号を取得
+    cursor.execute(
+        """
+        SELECT s.student_number 
+        FROM students s
+        JOIN student_subjects ss ON s.id = ss.student_id
+        JOIN student_participations sp ON ss.id = sp.student_subject_id
+        WHERE sp.subject_count_id = ? AND sp.exit_time IS NULL
+        """,
+        (session_id,)
+    )
+    students = cursor.fetchall()
+    student_numbers = [student['student_number'] for student in students]
+    
+    
+    # student_participationsのexit_timeを更新
+    cursor.execute(
+        """
+        UPDATE student_participations 
+        SET exit_time = ? 
+        WHERE subject_count_id = ? AND exit_time IS NULL
+        """,
+        (end_time, session_id,)
+    )
+
+    conn.commit()
+
     # 終了した講義のsubject_idを取得する
-    cursor.execute("SELECT subject_id FROM subject_counts WHERE id = ?", (session_id,))
+    cursor.execute(
+        "SELECT subject_id FROM subject_counts WHERE id = ?", (session_id,)
+    )
     subject = cursor.fetchone()
     subject_id = subject['subject_id'] if subject else None
     
+    # 学生に講義終了を通知
+    for student_number in student_numbers:
+        socketio.emit('session_exit', {
+            'message': '講義が終了したため、退出します。', 
+            'redirect_url': url_for('app.student.dashboard.dashboard')
+        }, room=student_number)
+
     if subject_id:
         flash("講義を終了しました。", "success")
         return redirect(url_for('app.teacher.lecture.show', subject_id=subject_id))
     else:
         flash("講義が見つかりませんでした。", "error")
         return redirect(url_for('app.teacher.dashboard.dashboard'))
+
 
 
 
@@ -221,7 +264,7 @@ def session(session_id):
 
     # 講義回に参加している学生の詳細を取得
     cursor.execute("""
-        SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_last_name,student_participations.attendance_time, student_participations.exit_time, student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
+        SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_last_name,student_participations.attendance_time, student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
         FROM student_participations
         JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
         JOIN students ON student_subjects.student_id = students.id
