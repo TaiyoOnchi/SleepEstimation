@@ -59,7 +59,6 @@ def init_db():
             period INTEGER NOT NULL,
             start_time DATETIME NOT NULL,
             end_time DATETIME,
-            lecture_active BOOLEAN NOT NULL,
             join_code VARCHAR(4) NOT NULL,
             FOREIGN KEY (subject_id) REFERENCES subjects (id)
         )

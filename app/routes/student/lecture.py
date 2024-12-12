@@ -87,7 +87,7 @@ def join():
         WHERE sp.student_subject_id IN (
             SELECT id FROM student_subjects WHERE student_id = ?
         )
-        AND sc.lecture_active = 1
+        AND sc.end_time IS NULL
         AND sp.exit_time IS NULL
     ''', (current_user.id,))
     active_participation = cursor.fetchone()
@@ -104,7 +104,7 @@ def join():
         FROM student_subjects
         JOIN subjects ON student_subjects.subject_id = subjects.id
         JOIN subject_counts ON subjects.id = subject_counts.subject_id
-        WHERE student_subjects.student_id = ? AND subject_counts.lecture_active = 1
+        WHERE student_subjects.student_id = ? AND subject_counts.end_time IS NULL
     ''', (current_user.id,))
     active_lectures = cursor.fetchall()
 
@@ -131,7 +131,7 @@ def join():
         cursor.execute('''
             SELECT id
             FROM subject_counts
-            WHERE id = ? AND join_code = ? AND lecture_active = 1
+            WHERE id = ? AND join_code = ? AND end_time IS NULL
         ''', (session_id, join_code))
         session_result = cursor.fetchone()
 

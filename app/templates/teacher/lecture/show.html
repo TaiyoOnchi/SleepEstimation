@@ -43,7 +43,7 @@
                 <td>{{ subject.ero_threshold }}%</td>
                 <td>
                     <!-- 講義開始/終了ボタンの表示条件 -->
-                    {% set active_session = lecture_sessions|selectattr('lecture_active', 'equalto', True)|first %}
+                    {% set active_session = lecture_sessions|selectattr('end_time', 'equalto', None)|first %}
                     {% if active_session %}
                         <!-- 講義終了ボタン -->
                         <form action="{{ url_for('app.teacher.lecture.end_session', session_id=active_session.id) }}" method="post" onsubmit="return confirmEndSession()">
@@ -58,6 +58,7 @@
                             <button type="button" onclick="showStartOptions()">講義を開始</button>
                         </form>
                     {% endif %}
+
                 </td>
             </tr>
            
@@ -92,7 +93,7 @@
                 <td>{{ session.classroom }}</td>
                 <td>{{ session.start_time }}</td>
                 <td>{{ session.end_time if session.end_time else '' }}</td>
-                <td>{{ '開講中' if session.lecture_active else '終了' }}</td>
+                <td>{{ '開講中' if session.end_time is none else '終了' }}</td>
                 <td>{{ session.join_code }}</td>
                 <td>
                     <a href="{{ url_for('app.teacher.lecture.session', session_id=session.id) }}">詳細を見る</a>

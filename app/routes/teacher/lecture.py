@@ -56,7 +56,7 @@ def start_session(subject_id):
     cursor = conn.cursor()
 
     # 既にアクティブな講義が存在するか確認
-    cursor.execute('SELECT subject_id FROM subject_counts WHERE lecture_active = 1 AND subject_id IN (SELECT id FROM subjects WHERE teacher_id = ?)', (current_user.id,))
+    cursor.execute('SELECT subject_id FROM subject_counts WHERE end_time IS NULL AND subject_id IN (SELECT id FROM subjects WHERE teacher_id = ?)', (current_user.id,))
     active_lecture = cursor.fetchone()
     if active_lecture:
         flash("アクティブな講義が既に存在しています。終了してください。","error")
@@ -87,9 +87,9 @@ def start_session(subject_id):
 
         # 新しい講義回データを追加
         cursor.execute('''
-            INSERT INTO subject_counts (subject_id, classroom, day_of_week, period, start_time, lecture_active, join_code)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (subject_id, new_classroom, new_day_of_week, new_period, start_time,True, join_code))
+            INSERT INTO subject_counts (subject_id, classroom, day_of_week, period, start_time, join_code)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (subject_id, new_classroom, new_day_of_week, new_period, start_time, join_code))
         conn.commit()
         
         # 挿入した行のIDを取得
@@ -129,7 +129,7 @@ def end_session(session_id):
     end_time = datetime.now()
     
     # アクティブな講義を終了する
-    cursor.execute("UPDATE subject_counts SET lecture_active = 0, end_time = ? WHERE id = ? AND lecture_active = 1", (end_time, session_id,))
+    cursor.execute("UPDATE subject_counts SET end_time = ? WHERE id = ? AND end_time IS NULL", (end_time, session_id,))
     conn.commit()
     
     # 終了した講義のsubject_idを取得する

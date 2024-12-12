@@ -38,7 +38,7 @@
                     <td>{{ active_session.day_of_week }}</td>
                     <td>{{ active_session.period }}限</td>
                     <td>{{ active_session.start_time }}</td>
-                    <td>{{ '開講中' if active_session.lecture_active else '終了' }}</td>
+                    <td>{{ '開講中' if active_session.end_time is none else '終了' }}</td>
                     <td>{{ active_session.join_code }}</td>
 
                     <td>

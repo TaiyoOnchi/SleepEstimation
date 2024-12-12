@@ -22,7 +22,7 @@ def main():
         WHERE sp.student_subject_id IN (
             SELECT id FROM student_subjects WHERE student_id = ?
         )
-        AND sc.lecture_active = 1
+        AND sc.end_time IS NULL
         AND sp.exit_time IS NULL
     ''', (current_user.id,))
     lecture_info = cursor.fetchone()

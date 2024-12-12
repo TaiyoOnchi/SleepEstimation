@@ -16,7 +16,7 @@ def dashboard():
         SELECT sc.*, s.subject_name
         FROM subject_counts sc
         JOIN subjects s ON sc.subject_id = s.id
-        WHERE sc.lecture_active = 1 AND s.teacher_id = ?
+        WHERE sc.end_time IS NULL AND s.teacher_id = ?
     """, (current_user.id,))
     active_sessions = cursor.fetchall()
     
