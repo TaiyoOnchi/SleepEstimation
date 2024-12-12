@@ -49,12 +49,12 @@
                 <td>{{ student.attention_count }}</td>
                 <td>{{ student.warning_count }}</td>
                 <td>
-                    {% if not student.exit_time %}
+                    {% if not lecture_session.end_time %}
                         <a href="{{ url_for('app.teacher.lecture.create_warning', student_id=student.id) }}">警告を送信</a>
                     {% else %}
                         <span style="color: gray;">警告を送信</span>
                     {% endif %}
-                </td>
+                </td>                
             </tr>
             {% endfor %}
         </tbody>
@@ -107,7 +107,7 @@
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
                 for (let row of table.rows) {
                     if (row.cells[0].textContent === data.student_number) {
-                        row.cells[6].textContent = data.attention_count; // 注意回数を更新
+                        row.cells[5].textContent = data.attention_count; // 注意回数を更新
                         return;
                     }
                 }
@@ -118,7 +118,7 @@
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
                 for (let row of table.rows) {
                     if (row.cells[0].textContent === data.student_number) {
-                        row.cells[7].textContent = data.warning_count; // 警告回数を更新
+                        row.cells[6].textContent = data.warning_count; // 警告回数を更新
                         return;
                     }
                 }
