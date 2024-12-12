@@ -124,7 +124,7 @@
             // 画像データを取得し、サーバーに送信
             const imageData = canvas.toDataURL('image/jpeg');
             socket.emit('monitor_eye_openness', { imageData: imageData, student_participation_id: student_participation_id });
-        }, 1000); // 5秒間隔で送信
+        }, 5000); // 5秒間隔で送信
 
         // サーバーからの画像データを受信して表示（必要ならば）
         socket.on('image_update', function(imageData) {

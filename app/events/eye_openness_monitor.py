@@ -17,6 +17,9 @@ def handle_teacher_join_room():
     room_name = f"teacher_{teacher_id}"  # ルーム名を動的に生成
     join_room(room_name)
     print(f"Teacher {teacher_id} joined the room {room_name}.")
+    
+    
+
 
 
 @socketio.on('student_join_room')
@@ -35,17 +38,6 @@ def handle_disconnect():
         student_number = current_user.student_number
         leave_room(student_number)  # 学生の部屋から退出
         print(f"学生 {student_number} は部屋を退出しました。")
-        
-        # # 必要に応じて学生の退出時の処理を追加
-        # # 例: データベースに退席時刻を記録するなど
-        # conn = current_app.get_db()
-        # cursor = conn.cursor()
-        # cursor.execute('''
-        #     UPDATE student_participations
-        #     SET exit_time = ?
-        #     WHERE student_number = ? AND exit_time IS NULL
-        # ''', (datetime.now(), student_number))
-        # conn.commit()
 
     # ログインしているユーザーが教員の場合
     elif current_user.role == 'teacher':

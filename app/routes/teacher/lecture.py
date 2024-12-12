@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, redirect,current_app,session,flash,url_for,request
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, redirect,current_app,flash,url_for,request,jsonify
+from flask_login import current_user
 from app.utils import teacher_required
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 import string
 from app import socketio
@@ -264,17 +264,87 @@ def session(session_id):
 
     # 講義回に参加している学生の詳細を取得
     cursor.execute("""
-        SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_last_name,student_participations.attendance_time, student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
+        SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_first_name,student_participations.attendance_time, student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
         FROM student_participations
         JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
         JOIN students ON student_subjects.student_id = students.id
         WHERE student_participations.subject_count_id = ?
     """, (session_id,))
     student_participations = cursor.fetchall()
+    
+    
+    # 現在時刻の1分前を取得
+    one_minute_ago = datetime.now() - timedelta(minutes=1)
+
+    # 開眼率が1分間記録されていない学生を取得
+    cursor.execute('''
+        SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_first_name,student_participations.attendance_time, student_participations.attention_count, student_participations.warning_count,student_participations.seat_number
+        FROM student_participations 
+        JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
+        JOIN students ON student_subjects.student_id = students.id
+        WHERE student_participations.subject_count_id = ?
+        AND student_participations.id NOT IN (
+            SELECT student_participation_id
+            FROM eye_openness
+            WHERE timestamp >= ?
+        ) AND student_participations.attendance_time <= ? AND student_participations.exit_time IS NULL
+    ''', (session_id, one_minute_ago, datetime.now()))
+
+    inactive_students = cursor.fetchall()
 
     return render_template('teacher/lecture/session.html', 
                            lecture_session=lecture_session, 
-                           student_participations=student_participations)
+                           student_participations=student_participations,
+                           inactive_students=inactive_students
+                           )
+    
+    
+@lecture_bp.route('/lecture/check_eye_openness', methods=['GET'])
+def check_eye_openness():
+    session_id = request.args.get('session_id')  # フロントから渡されるセッションID
+    if not session_id:
+        return jsonify({'error': 'Missing session_id'}), 400
+
+    conn = current_app.get_db()
+    cursor = conn.cursor()
+
+    # 現在時刻の1分前を取得
+    one_minute_ago = datetime.now() - timedelta(minutes=1)
+
+    # 開眼率が1分間記録されていない学生を取得
+    cursor.execute('''
+        SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_first_name,student_participations.attendance_time, student_participations.attention_count, student_participations.warning_count,student_participations.seat_number
+        FROM student_participations 
+        JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
+        JOIN students ON student_subjects.student_id = students.id
+        WHERE student_participations.subject_count_id = ?
+        AND student_participations.id NOT IN (
+            SELECT student_participation_id
+            FROM eye_openness
+            WHERE timestamp >= ?
+        ) AND student_participations.attendance_time <= ? AND student_participations.exit_time IS NULL
+    ''', (session_id, one_minute_ago, datetime.now()))
+
+    inactive_students = cursor.fetchall()
+
+
+    # 学生リストを整形して返却
+    formatted_students = [
+        {
+            'id': student[0],
+            'student_number': student[1],
+            'kana_last_name': student[4],
+            'kana_first_name': student[5],
+            'last_name': student[2],
+            'first_name': student[3],
+            'seat_number': student[9],
+            'attendance_time': student[6],
+            'attention_count': student[7],
+            'warning_count': student[8]
+        }
+        for student in inactive_students
+    ]
+    return jsonify({'inactive_students': formatted_students})
 
 
 

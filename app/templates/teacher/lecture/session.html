@@ -42,8 +42,8 @@
                         {{ student.student_number }}
                     </a>
                 </td>
-                <td>{{ student.last_name }} {{ student.first_name }}</td>
                 <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
+                <td>{{ student.last_name }} {{ student.first_name }}</td>
                 <td>{{ student.seat_number }}</td>
                 <td>{{ student.attendance_time }}</td>
                 <td class="attention-count">{{ student.attention_count }}</td>
@@ -59,6 +59,39 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <h3>開眼率が検出されない学生</h3>
+    <table border="1" id="inactive-students">
+        <thead>
+            <tr>
+                <th>学籍番号</th>
+                <th>カナ</th>
+                <th>氏名</th>
+                <th>座席番号</th>
+                <th>出席時刻</th>
+                <th>注意回数</th>
+                <th>警告回数</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in inactive_students %}
+            <tr data-student-number="{{ student.student_number }}">
+                <td>
+                    <a href="{{ url_for('app.teacher.lecture.session_student_details', session_id=lecture_session.id, student_id=student.id) }}">
+                        {{ student.student_number }}
+                    </a>
+                </td>
+                <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
+                <td>{{ student.last_name }} {{ student.first_name }}</td>
+                <td>{{ student.seat_number }}</td>
+                <td>{{ student.attendance_time }}</td>
+                <td class="attention-count">{{ student.attention_count }}</td>
+                <td>{{ student.warning_count }}</td>               
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
     
     <p><a href="{{ url_for('app.teacher.lecture.show', subject_id=lecture_session.subject_id) }}">講義情報に戻る</a></p>
     <p><a href="{{ url_for('app.teacher.dashboard.dashboard') }}">ダッシュボードに戻る</a></p>
@@ -142,7 +175,43 @@
                 rows.forEach(row => table.appendChild(row)); // ソート後に再配置
             }
             
-            
+            const inactiveTable = document.getElementById('inactive-students').getElementsByTagName('tbody')[0];
+
+            // 1分ごとに開眼率未検出学生をチェック
+            setInterval(() => {
+                fetch(`/teacher/lecture/check_eye_openness?session_id=${sessionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // テーブルをクリア
+                        inactiveTable.innerHTML = '';
+
+                        // データをテーブルに追加
+                        data.inactive_students.forEach(student => {
+                            const newRow = inactiveTable.insertRow();
+
+                            const numberCell = newRow.insertCell(0);
+                            const kanaCell = newRow.insertCell(1);
+                            const nameCell = newRow.insertCell(2);
+                            const seatCell = newRow.insertCell(3);
+                            const attendanceCell = newRow.insertCell(4);
+                            const attentionCell = newRow.insertCell(5);
+                            const warningCell = newRow.insertCell(6);
+                            const actionCell = newRow.insertCell(7);
+
+                            numberCell.textContent = student.student_number;
+                            kanaCell.textContent = `${student.kana_last_name} ${student.kana_first_name}`;
+                            nameCell.textContent = `${student.last_name} ${student.first_name}`;
+                            seatCell.textContent = student.seat_number || '未設定';
+                            attendanceCell.textContent = student.attendance_time || '不明';
+                            attentionCell.textContent = student.attention_count || 0;
+                            warningCell.textContent = student.warning_count || 0;
+                        });
+
+                    })
+                    .catch(error => {
+                        console.error('Error fetching inactive students:', error);
+                    });
+            }, 60000); // 1分間隔
 
         });
         
