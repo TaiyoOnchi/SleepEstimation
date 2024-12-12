@@ -13,39 +13,45 @@
 
     <!-- メインコンテンツ -->
     <div class="container mx-auto px-4 py-12">
-        <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl w-full mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-6 max-w-5xl w-full mx-auto">
+
             <h1 class="text-2xl font-bold text-gray-800 mb-6">講義情報登録</h1>
 
             {% include 'partials/flash_messages.html' %}
 
             <!-- 履修済みの講義 -->
-            <h2 class="text-xl font-bold text-gray-700 mb-4">履修済み</h2>
-            <table class="table-auto w-full border-collapse border border-gray-300">
+            <h2 class="text-xl font-bold text-gray-700 mb-4">履修済み講義</h2>
+            <table class="table-auto min-w-full border-collapse border border-gray-300">
+
                 <thead>
                     <tr class="bg-gray-200">
-                        <th class="border border-gray-300 px-4 py-2">講義名</th>
-                        <th class="border border-gray-300 px-4 py-2">教室</th>
-                        <th class="border border-gray-300 px-4 py-2">曜日</th>
-                        <th class="border border-gray-300 px-4 py-2">時限</th>
-                        <th class="border border-gray-300 px-4 py-2">累計注意回数</th>
-                        <th class="border border-gray-300 px-4 py-2">累計警告回数</th>
-                        <th class="border border-gray-300 px-4 py-2">出席回数</th>
+                    <th class="border border-gray-300 px-6 py-3">講義名</th>
+                    <th class="border border-gray-300 px-6 py-3">教室</th>
+                    <th class="border border-gray-300 px-6 py-3">曜日</th>
+                    <th class="border border-gray-300 px-6 py-3">時限</th>
+                    <th class="border border-gray-300 px-6 py-3">累計注意回数</th>
+                    <th class="border border-gray-300 px-6 py-3">累計警告回数</th>
+                    <th class="border border-gray-300 px-6 py-3">出席状況</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for subject in registered_subjects %}
                         <tr>
-                            <td class="border border-gray-300 px-4 py-2">{{ subject['subject_name'] }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ subject['default_classroom'] }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ subject['default_day_of_week'] }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ subject['default_period'] }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ subject['total_attentions'] }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ subject['total_warnings'] }}</td>
-                            <td class="border border-gray-300 px-4 py-2">{{ subject['attendance_count'] }}</td>
+                            <td class="border border-gray-300 px-6 py-3">{{ subject['subject_name'] }}</td>
+                            <td class="border border-gray-300 px-6 py-3">{{ subject['default_classroom'] }}</td>
+                            <td class="border border-gray-300 px-6 py-3">{{ subject['default_day_of_week'] }}</td>
+                            <td class="border border-gray-300 px-6 py-3">{{ subject['default_period'] }}</td>
+                            <td class="border border-gray-300 px-6 py-3 text-center">{{ subject['total_attentions'] }}</td>
+                            <td class="border border-gray-300 px-6 py-3 text-center">{{ subject['total_warnings'] }}</td>
+                            <td class="border border-gray-300 px-6 py-3 text-center">
+                                {{ subject['attendance_count'] }} / {{ subject['lecture_count'] }}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
+
+
             
 
             <h2 class="text-xl font-bold text-gray-700 mb-4">履修可能な講義</h2>

@@ -39,7 +39,9 @@
             {% for student in student_participations %}
             <tr data-student-number="{{ student.student_number }}">
                 <td>
-                    <a href="{{ url_for('app.teacher.lecture.session_student_details', session_id=lecture_session.id, student_id=student.id) }}">{{ student.student_number }}</a>
+                    <a href="{{ url_for('app.teacher.lecture.session_student_details', session_id=lecture_session.id, student_id=student.id) }}">
+                        {{ student.student_number }}
+                    </a>
                 </td>
                 <td>{{ student.last_name }} {{ student.first_name }}</td>
                 <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>

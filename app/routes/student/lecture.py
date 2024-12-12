@@ -44,7 +44,10 @@ def register():
             (SELECT COUNT(*) 
              FROM student_participations sp 
              JOIN subject_counts sc ON sp.subject_count_id = sc.id
-             WHERE sp.student_subject_id = ss.id) AS attendance_count
+             WHERE sp.student_subject_id = ss.id) AS attendance_count,
+            (SELECT COUNT(*) 
+             FROM subject_counts 
+             WHERE subject_counts.subject_id = s.id) AS lecture_count
         FROM subjects s
         JOIN student_subjects ss ON s.id = ss.subject_id
         WHERE ss.student_id = ?
@@ -65,6 +68,7 @@ def register():
     return render_template('student/lecture/register.html', 
                            registered_subjects=registered_subjects, 
                            subjects=subjects)
+
 
 
 
@@ -146,15 +150,16 @@ def join():
                 return redirect(url_for('app.student.lecture.join'))
             # -------------------------
 
+            attendance_time = datetime.now()
             # 新しい参加記録を作成
             cursor.execute('''
                 INSERT INTO student_participations (student_subject_id, subject_count_id, attendance_time, seat_number)
-                SELECT student_subjects.id, ? AS subject_count_id, datetime('now'), ? AS seat_number
+                SELECT student_subjects.id, ? AS subject_count_id, ?, ? AS seat_number
                 FROM student_subjects
                 WHERE student_subjects.student_id = ? AND student_subjects.subject_id = (
                     SELECT subject_id FROM subject_counts WHERE id = ?
                 )
-            ''', (session_id, seat_number, current_user.id, session_id))
+            ''', (session_id, attendance_time,seat_number,current_user.id, session_id))
             conn.commit()
 
             # 参加した学生の詳細を取得
