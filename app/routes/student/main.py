@@ -38,10 +38,7 @@ def main():
         subject_id = lecture_info[5]  # subject_id を取得
         seat_number = lecture_info[6]  # 座席番号を取得
     else:
-        student_participation_id = None
-        current_lecture = {}
-        subject_id = None  # デフォルト値またはエラーハンドリング
-        seat_number = None  # 座席番号のデフォルト値
+        return render_template('student/dashboard.html', alert_message="現在、参加中の講義はありません。", alert_type="warning")
 
     # student_subjects の情報を取得
     cursor.execute('''

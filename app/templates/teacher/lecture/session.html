@@ -46,7 +46,7 @@
                 <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
                 <td>{{ student.seat_number }}</td>
                 <td>{{ student.attendance_time }}</td>
-                <td>{{ student.attention_count }}</td>
+                <td class="attention-count">{{ student.attention_count }}</td>
                 <td>{{ student.warning_count }}</td>
                 <td>
                     {% if not lecture_session.end_time %}
@@ -66,6 +66,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            sortTableByAttention(); // 更新後にソートを適用
             const socket = io();
             socket.emit('teacher_join_room');
 
@@ -75,9 +76,10 @@
             socket.on('student_joined', function(data) {
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
                 const newRow = table.insertRow();
-            
+                
                 newRow.setAttribute('data-student-number', data.student_number);
             
+                // セルを作成し、クラスを付与
                 const studentNumberCell = newRow.insertCell(0);
                 const studentLink = document.createElement('a');
                 studentLink.href = `/teacher/session/${sessionId}/student/${data.id}`;
@@ -88,41 +90,60 @@
                 newRow.insertCell(2).textContent = `${data.last_name} ${data.first_name}`;
                 newRow.insertCell(3).textContent = data.seat_number;
                 newRow.insertCell(4).textContent = data.attendance_time;
-                newRow.insertCell(5).textContent = data.attention_count;
-                newRow.insertCell(6).textContent = data.warning_count;
-                
-                const warningCell = newRow.insertCell(7);
+            
+                // 注意回数セルにクラスを追加
+                const attentionCell = newRow.insertCell(5);
+                attentionCell.textContent = data.attention_count;
+                attentionCell.classList.add('attention-count');
+            
+                // 警告回数セル
+                const warningCell = newRow.insertCell(6);
+                warningCell.textContent = data.warning_count;
+            
+                // 警告送信リンク
+                const actionCell = newRow.insertCell(7);
                 const warningLink = document.createElement('a');
                 warningLink.href = `/teacher/create_warning?student_id=${data.id}`;
                 warningLink.textContent = '警告を送信';
-                warningCell.appendChild(warningLink);
+                actionCell.appendChild(warningLink);
+            
+                // ソートを適用
+                sortTableByAttention();
             });
             
             
 
             
 
-            // 注意回数更新通知
             socket.on('attention_updated', function(data) {
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
                 for (let row of table.rows) {
-                    if (row.cells[0].textContent === data.student_number) {
-                        row.cells[5].textContent = data.attention_count; // 注意回数を更新
+                    if (row.dataset.studentNumber === data.student_number) {
+                        const attentionCell = row.querySelector('.attention-count');
+                        if (attentionCell) {
+                            attentionCell.textContent = data.attention_count; // 注意回数を更新
+                            console.log('Updated attention count for:', data.student_number);
+                        }
+                        sortTableByAttention(); // 更新後にソートを適用
                         return;
                     }
                 }
             });
-
-            // 警告回数更新通知
-            socket.on('warning_updated', function(data) {
+            
+            
+            function sortTableByAttention() {
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
-                for (let row of table.rows) {
-                    if (row.cells[0].textContent === data.student_number) {
-                        row.cells[6].textContent = data.warning_count; // 警告回数を更新
-                        return;
-                    }
-                }
-            });
+                const rows = Array.from(table.rows);
+                rows.sort((a, b) => {
+                    const countA = parseInt(a.querySelector('.attention-count').textContent, 10) || 0;
+                    const countB = parseInt(b.querySelector('.attention-count').textContent, 10) || 0;
+                    return countB - countA;
+                });
+                rows.forEach(row => table.appendChild(row)); // ソート後に再配置
+            }
+            
+            
+
         });
         
 
