@@ -2,99 +2,140 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>講義回詳細</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7f6;
+        }
+    </style>
 </head>
-<body>
-    <h1>講義回詳細</h1>
+<body class="bg-gray-50">
+    {% include 'partials/header.html' %}
     {% include 'partials/flash_messages.html' %}
+    <main class="mt-6">
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+            
+            <div class="bg-white shadow-md rounded-lg p-6">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">講義回詳細</h1>
+                
 
-    <h2>{{ lecture_session.day_of_week }} 第{{ lecture_session.period }}限 - {{ lecture_session.classroom }}</h2>
-    <p>開始時刻: {{ lecture_session.start_time }}</p>
-    <p>終了時刻: {{ lecture_session.end_time }}</p>
-    <p>参加コード: {{ lecture_session.join_code }}</p>
-    {% if not lecture_session.end_time %}
-    <!-- 講義終了ボタン -->
-        <form action="{{ url_for('app.teacher.lecture.end_session', session_id=lecture_session.id) }}" method="post" onsubmit="return confirmEndSession()">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit">講義を終了</button>
-        </form>
-    {% endif %}
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                    <h2 class="text-xl font-semibold text-gray-700">
+                        {{ lecture_session.day_of_week }} 第{{ lecture_session.period }}限 - {{ lecture_session.classroom }}
+                    </h2>
+                    <div class="mt-2 text-gray-600">
+                        <p>開始時刻: {{ lecture_session.start_time }}</p>
+                        <p>終了時刻: {{ lecture_session.end_time }}</p>
+                        <p>参加コード: {{ lecture_session.join_code }}</p>
+                    </div>
+                </div>
 
-    <h3>参加学生</h3>
-    <table border="1" id="participants">
-        <thead>
-            <tr>
-                <th>学籍番号</th>
-                <th>カナ</th>
-                <th>氏名</th>
-                <th>座席番号</th>
-                <th>出席時刻</th>
-                <th>注意回数</th>
-                <th>警告回数</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for student in student_participations %}
-            <tr data-student-number="{{ student.student_number }}">
-                <td>
-                    <a href="{{ url_for('app.teacher.lecture.session_student_details', session_id=lecture_session.id, student_id=student.id) }}">
-                        {{ student.student_number }}
+                {% if not lecture_session.end_time %}
+                <div class="mb-6">
+                    <form action="{{ url_for('app.teacher.lecture.end_session', session_id=lecture_session.id) }}" method="post" onsubmit="return confirmEndSession()">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors">
+                            講義を終了
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">参加学生</h3>
+                    <div class="overflow-x-auto">
+                        <table id="participants" class="w-full bg-white shadow rounded-lg">
+                            <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                <tr>
+                                    <th class="py-3 px-4 text-left">学籍番号</th>
+                                    <th class="py-3 px-4 text-left">名前</th>
+                                    <th class="py-3 px-4 text-left">カナ</th>
+                                    <th class="py-3 px-4 text-left">座席番号</th>
+                                    <th class="py-3 px-4 text-left">出席時刻</th>
+                                    <th class="py-3 px-4 text-left">注意回数</th>
+                                    <th class="py-3 px-4 text-left">警告回数</th>
+                                    <th class="py-3 px-4 text-left">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                {% for student in student_participations %}
+                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="py-3 px-4">
+                                        <a href="{{ url_for('app.teacher.lecture.session_student_details', session_id=lecture_session.id, student_id=student.id) }}" class="text-blue-600 hover:underline">
+                                            {{ student.student_number }}
+                                        </a>
+                                    </td>
+                                    <td class="py-3 px-4">{{ student.last_name }} {{ student.first_name }}</td>
+                                    <td class="py-3 px-4">{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
+                                    <td class="py-3 px-4">{{ student.seat_number }}</td>
+                                    <td class="py-3 px-4">{{ student.attendance_time }}</td>
+                                    <td class="py-3 px-4">{{ student.attention_count }}</td>
+                                    <td class="py-3 px-4">{{ student.warning_count }}</td>
+                                    <td class="py-3 px-4">
+                                        {% if not lecture_session.end_time %}
+                                        <a href="{{ url_for('app.teacher.lecture.create_warning', student_id=student.id) }}" class="text-red-500 hover:text-red-700">
+                                            警告を送信
+                                        </a>
+                                        {% else %}
+                                        <span class="text-gray-400">警告を送信</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">開眼率が検出されない学生</h3>
+                    <div class="overflow-x-auto">
+                        <table id="inactive-students" class="w-full bg-white shadow rounded-lg">
+                            <thead class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                <tr>
+                                    <th class="py-3 px-4 text-left">学籍番号</th>
+                                    <th class="py-3 px-4 text-left">名前</th>
+                                    <th class="py-3 px-4 text-left">カナ</th>
+                                    <th class="py-3 px-4 text-left">座席番号</th>
+                                    <th class="py-3 px-4 text-left">出席時刻</th>
+                                    <th class="py-3 px-4 text-left">注意回数</th>
+                                    <th class="py-3 px-4 text-left">警告回数</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                {% for student in inactive_students %}
+                                <tr data-student-number="{{ student.student_number }}" class="border-b border-gray-200 hover:bg-gray-50">
+                                    <td class="py-3 px-4">
+                                        <a href="{{ url_for('app.teacher.lecture.session_student_details', session_id=lecture_session.id, student_id=student.id) }}" class="text-blue-600 hover:underline">
+                                            {{ student.student_number }}
+                                        </a>
+                                    </td>
+                                    <td class="py-3 px-4">{{ student.last_name }} {{ student.first_name }}</td>
+                                    <td class="py-3 px-4">{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
+                                    <td class="py-3 px-4">{{ student.seat_number }}</td>
+                                    <td class="py-3 px-4">{{ student.attendance_time }}</td>
+                                    <td class="attention-count py-3 px-4">{{ student.attention_count }}</td>
+                                    <td class="py-3 px-4">{{ student.warning_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex space-x-4 mt-6">
+                    <a href="{{ url_for('app.teacher.lecture.show', subject_id=lecture_session.subject_id) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                        講義情報に戻る
                     </a>
-                </td>
-                <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
-                <td>{{ student.last_name }} {{ student.first_name }}</td>
-                <td>{{ student.seat_number }}</td>
-                <td>{{ student.attendance_time }}</td>
-                <td class="attention-count">{{ student.attention_count }}</td>
-                <td>{{ student.warning_count }}</td>
-                <td>
-                    {% if not lecture_session.end_time %}
-                        <a href="{{ url_for('app.teacher.lecture.create_warning', student_id=student.id) }}">警告を送信</a>
-                    {% else %}
-                        <span style="color: gray;">警告を送信</span>
-                    {% endif %}
-                </td>                
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <h3>開眼率が検出されない学生</h3>
-    <table border="1" id="inactive-students">
-        <thead>
-            <tr>
-                <th>学籍番号</th>
-                <th>カナ</th>
-                <th>氏名</th>
-                <th>座席番号</th>
-                <th>出席時刻</th>
-                <th>注意回数</th>
-                <th>警告回数</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for student in inactive_students %}
-            <tr data-student-number="{{ student.student_number }}">
-                <td>
-                    <a href="{{ url_for('app.teacher.lecture.session_student_details', session_id=lecture_session.id, student_id=student.id) }}">
-                        {{ student.student_number }}
+                    <a href="{{ url_for('app.teacher.dashboard.dashboard') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors">
+                        ダッシュボードに戻る
                     </a>
-                </td>
-                <td>{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
-                <td>{{ student.last_name }} {{ student.first_name }}</td>
-                <td>{{ student.seat_number }}</td>
-                <td>{{ student.attendance_time }}</td>
-                <td class="attention-count">{{ student.attention_count }}</td>
-                <td>{{ student.warning_count }}</td>               
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    
-    <p><a href="{{ url_for('app.teacher.lecture.show', subject_id=lecture_session.subject_id) }}">講義情報に戻る</a></p>
-    <p><a href="{{ url_for('app.teacher.dashboard.dashboard') }}">ダッシュボードに戻る</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script>
@@ -118,9 +159,14 @@
                 studentLink.href = `/teacher/session/${sessionId}/student/${data.id}`;
                 studentLink.textContent = data.student_number;
                 studentNumberCell.appendChild(studentLink);
+
+                    // クラスを追加
+                studentLink.classList.add('text-blue-600', 'hover:underline');
+                studentNumberCell.appendChild(studentLink);
             
-                newRow.insertCell(1).textContent = `${data.kana_last_name} ${data.kana_first_name}`;
-                newRow.insertCell(2).textContent = `${data.last_name} ${data.first_name}`;
+                newRow.insertCell(1).textContent = `${data.last_name} ${data.first_name}`;
+                newRow.insertCell(2).textContent = `${data.kana_last_name} ${data.kana_first_name}`;
+                
                 newRow.insertCell(3).textContent = data.seat_number;
                 newRow.insertCell(4).textContent = data.attendance_time;
             
@@ -185,20 +231,27 @@
                         // テーブルをクリア
                         inactiveTable.innerHTML = '';
 
-                        // データをテーブルに追加
                         data.inactive_students.forEach(student => {
                             const newRow = inactiveTable.insertRow();
-
+                        
                             const numberCell = newRow.insertCell(0);
-                            const kanaCell = newRow.insertCell(1);
-                            const nameCell = newRow.insertCell(2);
+                            const nameCell = newRow.insertCell(1);
+                            const kanaCell = newRow.insertCell(2);
                             const seatCell = newRow.insertCell(3);
                             const attendanceCell = newRow.insertCell(4);
                             const attentionCell = newRow.insertCell(5);
                             const warningCell = newRow.insertCell(6);
                             const actionCell = newRow.insertCell(7);
-
-                            numberCell.textContent = student.student_number;
+                        
+                            // 学籍番号セルにリンクを追加
+                            const link = document.createElement('a'); // <a> タグを作成
+                            link.href = `/student/detail/${student.student_number}`; // リンクのURLを設定
+                            link.textContent = student.student_number; // リンクテキストとして学籍番号を設定
+                            link.style.color = 'blue'; // 青文字に設定
+                            link.style.textDecoration = 'underline'; // 下線付き（必要なら追加）
+                        
+                            numberCell.appendChild(link); // <a> タグを numberCell に追加
+                        
                             kanaCell.textContent = `${student.kana_last_name} ${student.kana_first_name}`;
                             nameCell.textContent = `${student.last_name} ${student.first_name}`;
                             seatCell.textContent = student.seat_number || '未設定';
@@ -206,6 +259,7 @@
                             attentionCell.textContent = student.attention_count || 0;
                             warningCell.textContent = student.warning_count || 0;
                         });
+                        
 
                     })
                     .catch(error => {

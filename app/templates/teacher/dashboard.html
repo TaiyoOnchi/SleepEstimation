@@ -1,140 +1,177 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教員ダッシュボード</title>
-    <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f2f2f2; text-align: left; }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>教員ダッシュボード</h1>
+<body class="bg-gradient-to-b from-blue-50 to-white min-h-screen">
+    {% include 'partials/header.html' %}<!-- ヘッダーを読み込み -->
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-4xl font-bold text-gray-900 mb-8">教員ダッシュボード</h1>
 
-    {% include 'partials/flash_messages.html' %}
+            {% include 'partials/flash_messages.html' %}
 
+            <!-- 開講中の講義セクション -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">開講中の講義</h2>
+                {% if not active_session %}
+                    <p class="text-gray-600">開講中の講義はありません。</p>
+                {% else %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-4 text-left">講義名</th>
+                                    <th class="py-3 px-4 text-left">教室</th>
+                                    <th class="py-3 px-4 text-left">曜日</th>
+                                    <th class="py-3 px-4 text-left">時限</th>
+                                    <th class="py-3 px-4 text-left">開始時刻</th>
+                                    <th class="py-3 px-4 text-left">状態</th>
+                                    <th class="py-3 px-4 text-left">コード</th>
+                                    <th class="py-3 px-4 text-left">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-4">{{ active_session.subject_name }}</td>
+                                    <td class="py-3 px-4">{{ active_session.classroom }}</td>
+                                    <td class="py-3 px-4">{{ active_session.day_of_week }}</td>
+                                    <td class="py-3 px-4">{{ active_session.period }}限</td>
+                                    <td class="py-3 px-4">{{ active_session.start_time }}</td>
+                                    <td class="py-3 px-4">
+                                        <span class="bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs">
+                                            {{ '開講中' if active_session.end_time is none else '終了' }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">{{ active_session.join_code }}</td>
+                                    <td class="py-3 px-4">
+                                        <form id="end-session-form-{{ active_session.id }}" 
+                                              action="{{ url_for('app.teacher.lecture.end_session', session_id=active_session.id) }}" 
+                                              method="post">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="button" 
+                                                    onclick="confirmEndSession({{ active_session.id }})"
+                                                    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors">
+                                                講義を終了
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
 
-    <h2>開講中の講義</h2>
-    {% if not active_session %}
-        <p>開講中の講義はありません。</p>
-    {% else %}
-        <table>
-            <thead>
-                <tr>
-                    <th>講義名</th>
-                    <th>教室</th>
-                    <th>曜日</th>
-                    <th>時限</th>
-                    <th>開始時刻</th>
-                    <th>状態</th>
-                    <th>コード</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ active_session.subject_name }}</td>
-                    <td>{{ active_session.classroom }}</td>
-                    <td>{{ active_session.day_of_week }}</td>
-                    <td>{{ active_session.period }}限</td>
-                    <td>{{ active_session.start_time }}</td>
-                    <td>{{ '開講中' if active_session.end_time is none else '終了' }}</td>
-                    <td>{{ active_session.join_code }}</td>
+            <!-- 講義情報セクション -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">講義情報</h2>
+                    <a href="{{ url_for('app.teacher.lecture.new') }}" 
+                       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                        新しい講義の作成
+                    </a>
+                </div>
 
-                    <td>
-                        <form id="end-session-form-{{ active_session.id }}" action="{{ url_for('app.teacher.lecture.end_session', session_id=active_session.id) }}" method="post">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="button" onclick="confirmEndSession({{ active_session.id }})">講義を終了</button>
-                        </form>
-                    </td>
-                </tr>
-                
-            </tbody>
-        </table>
-    {% endif %}
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                <th class="py-3 px-4 text-left">講義名</th>
+                                <th class="py-3 px-4 text-left">教室</th>
+                                <th class="py-3 px-4 text-left">曜日</th>
+                                <th class="py-3 px-4 text-left">時限</th>
+                                <th class="py-3 px-4 text-left">開眼率閾値</th>
+                                <th class="py-3 px-4 text-left">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-700">
+                            {% for subject in subjects %}
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-4">
+                                    <a href="{{ url_for('app.teacher.lecture.show', subject_id=subject.id) }}" 
+                                       class="text-blue-600 hover:underline">
+                                        {{ subject.subject_name }}
+                                    </a>
+                                </td>
+                                <td class="py-3 px-4">{{ subject.default_classroom }}</td>
+                                <td class="py-3 px-4">{{ subject.default_day_of_week }}曜</td>
+                                <td class="py-3 px-4">{{ subject.default_period }}限</td>
+                                <td class="py-3 px-4">{{ subject.ero_threshold }}%</td>
+                                <td class="py-3 px-4">
+                                    <form id="start-session-form-{{ subject.id }}" 
+                                          action="{{ url_for('app.teacher.lecture.start_session', subject_id=subject.id) }}" 
+                                          method="post">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="modify_schedule" id="modify_schedule" value="false">
+                                        
+                                        {% if active_session %}
+                                            <button type="button" disabled 
+                                                    class="bg-gray-300 text-gray-500 px-4 py-2 rounded cursor-not-allowed">
+                                                講義を開始
+                                            </button>
+                                        {% else %}
+                                            <button type="button" 
+                                                    onclick="showStartOptions({{ subject.id }})"
+                                                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                                                講義を開始
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-    <h2>講義情報</h2>
-    <p><a href="{{ url_for('app.teacher.lecture.new') }}">新しい講義の作成</a></p>
+            <div class="mt-6 text-center">
+                <a href="{{ url_for('app.auth.logout') }}" 
+                   class="text-gray-600 hover:text-blue-600 transition-colors">
+                    ログアウト
+                </a>
+            </div>
+        </div>
+    </div>
 
-    <!-- 登録済み講義のリスト -->
-    <table>
-        <thead>
-            <tr>
-                <th>講義名</th>
-                <th>教室</th>
-                <th>曜日</th>
-                <th>時限</th>
-                <th>開眼率の閾値</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for subject in subjects %}
-            <tr>
-                <td><a href="{{ url_for('app.teacher.lecture.show', subject_id=subject.id) }}">{{ subject.subject_name }}</a></td>
-                <td>{{ subject.default_classroom }}</td>
-                <td>{{ subject.default_day_of_week }}曜</td>
-                <td>{{ subject.default_period }}限</td>
-                <td>{{ subject.ero_threshold }}%</td>
-                <td>
-                    <form id="start-session-form-{{ subject.id }}" action="{{ url_for('app.teacher.lecture.start_session', subject_id=subject.id) }}" method="post">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="modify_schedule" id="modify_schedule" value="false">
-                        
-                        {% if active_session %}
-                            <button type="button" disabled>講義を開始</button>
-                        {% else %}
-                            <button type="button" onclick="showStartOptions({{ subject.id }})">講義を開始</button>
-                        {% endif %}
-                    </form>
-        
-                    <script>
-                        function confirmEndSession(sessionId) {
-                            if (confirm("本当にこの講義を終了しますか？")) {
-                                document.getElementById("end-session-form-" + sessionId).submit();
-                            }
-                        }
+    <script>
+        // 以前のJavaScriptコードをここに配置
+        function confirmEndSession(sessionId) {
+            if (confirm("本当にこの講義を終了しますか？")) {
+                document.getElementById("end-session-form-" + sessionId).submit();
+            }
+        }
 
-                        function showStartOptions(subjectId) {
-                            const startOptions = document.createElement('div');
-                            startOptions.style.position = 'fixed';
-                            startOptions.style.top = '50%';
-                            startOptions.style.left = '50%';
-                            startOptions.style.transform = 'translate(-50%, -50%)';
-                            startOptions.style.padding = '20px';
-                            startOptions.style.backgroundColor = '#f9f9f9';
-                            startOptions.style.border = '1px solid #ddd';
-                            startOptions.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-                            startOptions.innerHTML = `
-                                <p>既存の教室、曜日、時限で講義を開始しますか？</p>
-                                <button onclick="startWithDefault(${subjectId})">開始</button>
-                                <button onclick="modifyAndStart(${subjectId})">変更して開始</button>
-                                <button onclick="cancelStart()">キャンセル</button>
-                            `;
-                            document.body.appendChild(startOptions);
-                        }
-                        
-        
-                        function startWithDefault(subjectId) {
-                            document.getElementById("modify_schedule").value = "false";
-                            document.getElementById("start-session-form-" + subjectId).submit();
-                        }
-        
-                        function modifyAndStart(subjectId) {
-                            window.location.href = "{{ url_for('app.teacher.lecture.start_session', subject_id=0) }}".replace("0", subjectId);
-                        }
-        
-                        function cancelStart() {
-                            document.body.removeChild(document.body.lastChild);
-                        }
-                    </script>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        
-    </table>
+        function showStartOptions(subjectId) {
+            const startOptions = document.createElement('div');
+            startOptions.classList.add('fixed', 'top-1/2', 'left-1/2', 'transform', '-translate-x-1/2', '-translate-y-1/2', 'bg-white', 'p-6', 'rounded-xl', 'shadow-lg', 'z-50');
+            startOptions.innerHTML = `
+                <p class="text-gray-800 mb-4">既存の教室、曜日、時限で講義を開始しますか？</p>
+                <div class="flex space-x-4">
+                    <button onclick="startWithDefault(${subjectId})" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">開始</button>
+                    <button onclick="modifyAndStart(${subjectId})" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">変更して開始</button>
+                    <button onclick="cancelStart()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">キャンセル</button>
+                </div>
+            `;
+            document.body.appendChild(startOptions);
+        }
 
-    <p><a href="{{ url_for('app.auth.logout') }}">ログアウト</a></p>
+        function startWithDefault(subjectId) {
+            document.getElementById("modify_schedule").value = "false";
+            document.getElementById("start-session-form-" + subjectId).submit();
+        }
+
+        function modifyAndStart(subjectId) {
+            window.location.href = "{{ url_for('app.teacher.lecture.start_session', subject_id=0) }}".replace("0", subjectId);
+        }
+
+        function cancelStart() {
+            document.body.removeChild(document.body.lastChild);
+        }
+    </script>
 </body>
 </html>
