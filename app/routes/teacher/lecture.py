@@ -333,10 +333,10 @@ def check_eye_openness():
         {
             'id': student[0],
             'student_number': student[1],
-            'last_name': student[2],
-            'first_name': student[3],
             'kana_last_name': student[4],
             'kana_first_name': student[5],
+            'last_name': student[2],
+            'first_name': student[3],
             'seat_number': student[9],
             'attendance_time': student[6],
             'attention_count': student[7],
