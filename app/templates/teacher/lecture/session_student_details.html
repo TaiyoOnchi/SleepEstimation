@@ -4,137 +4,162 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>学生詳細情報</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-gradient-to-b from-blue-50 to-white min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-4xl font-bold text-gray-900 mb-8">学生詳細情報</h1>
 
-<h1>学生詳細情報</h1>
-{% include 'partials/flash_messages.html' %}
+            {% include 'partials/flash_messages.html' %}
 
-<!-- 学生の基本情報 -->
-<h2>学生情報</h2>
-{% if student_info %}
-<ul>
-    
-    <li><img src="data:image/jpeg;base64,{{ student_info.face_photo }}" alt="顔写真" /></li>
-    <li><strong>学生番号:</strong> {{ student_info[0] }}</li>
-    <li><strong>姓 (カナ):</strong> {{ student_info[1] }}</li>
-    <li><strong>名 (カナ):</strong> {{ student_info[2] }}</li>
-    <li><strong>姓:</strong> {{ student_info[3] }}</li>
-    <li><strong>名:</strong> {{ student_info[4] }}</li>
-</ul>
-{% else %}
-<p>学生情報が見つかりませんでした。</p>
-{% endif %}
+            <!-- 学生の基本情報 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">学生情報</h2>
+                {% if student_info %}
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <img src="data:image/jpeg;base64,{{ student_info.face_photo }}" alt="顔写真" class="w-full max-w-sm mx-auto rounded-lg shadow-md" />
+                        </div>
+                        <div>
+                            <ul class="space-y-2">
+                                <li><strong class="text-gray-600">学生番号:</strong> <span class="text-gray-800">{{ student_info[0] }}</span></li>
+                                <li><strong class="text-gray-600">姓 (カナ):</strong> <span class="text-gray-800">{{ student_info[1] }}</span></li>
+                                <li><strong class="text-gray-600">名 (カナ):</strong> <span class="text-gray-800">{{ student_info[2] }}</span></li>
+                                <li><strong class="text-gray-600">姓:</strong> <span class="text-gray-800">{{ student_info[3] }}</span></li>
+                                <li><strong class="text-gray-600">名:</strong> <span class="text-gray-800">{{ student_info[4] }}</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-gray-600">学生情報が見つかりませんでした。</p>
+                {% endif %}
+            </div>
 
-<!-- 講義全体の統計 -->
-<h2>講義全体の統計</h2>
-{% if lecture_totals %}
-<ul>
-    <li><strong>総注意回数:</strong> {{ lecture_totals[0] }}</li>
-    <li><strong>総警告回数:</strong> {{ lecture_totals[1] }}</li>
-</ul>
-{% else %}
-<p>講義情報が見つかりませんでした。</p>
-{% endif %}
+            <!-- 講義全体の統計 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">講義全体の統計</h2>
+                {% if lecture_totals %}
+                    <ul class="space-y-2">
+                        <li><strong class="text-gray-600">総注意回数:</strong> <span class="text-gray-800">{{ lecture_totals[0] }}</span></li>
+                        <li><strong class="text-gray-600">総警告回数:</strong> <span class="text-gray-800">{{ lecture_totals[1] }}</span></li>
+                    </ul>
+                {% else %}
+                    <p class="text-gray-600">講義情報が見つかりませんでした。</p>
+                {% endif %}
+            </div>
 
-<!-- 出席情報 -->
-<h2>出席情報</h2>
-{% if participation_info %}
-<ul>
-    <li><strong>出席時間:</strong> {{ participation_info[0] or "未登録" }}</li>
-    <li><strong>退出時間:</strong> {{ participation_info[1] or "未登録" }}</li>
-    <li><strong>注意回数:</strong> {{ participation_info[2] }}</li>
-    <li><strong>警告回数:</strong> {{ participation_info[3] }}</li>
-</ul>
-{% else %}
-<p>出席情報が見つかりませんでした。</p>
-{% endif %}
+            <!-- 出席情報 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">出席情報</h2>
+                {% if participation_info %}
+                    <ul class="space-y-2">
+                        <li><strong class="text-gray-600">出席時間:</strong> <span class="text-gray-800">{{ participation_info[0] or "未登録" }}</span></li>
+                        <li><strong class="text-gray-600">退出時間:</strong> <span class="text-gray-800">{{ participation_info[1] or "未登録" }}</span></li>
+                        <li><strong class="text-gray-600">注意回数:</strong> <span class="text-gray-800">{{ participation_info[2] }}</span></li>
+                        <li><strong class="text-gray-600">警告回数:</strong> <span class="text-gray-800">{{ participation_info[3] }}</span></li>
+                    </ul>
+                {% else %}
+                    <p class="text-gray-600">出席情報が見つかりませんでした。</p>
+                {% endif %}
+            </div>
 
+            <!-- 注意情報 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">注意履歴</h2>
+                {% if attentions and attentions|length > 0 %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-4 text-left">ID</th>
+                                    <th class="py-3 px-4 text-left">タイムスタンプ</th>
+                                    <th class="py-3 px-4 text-left">睡眠時間</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                {% for attention in attentions %}
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-4">{{ attention[0] }}</td>
+                                    <td class="py-3 px-4">{{ attention[1] }}</td>
+                                    <td class="py-3 px-4">{{ attention[2] or "なし" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-gray-600">注意履歴はありません。</p>
+                {% endif %}
+            </div>
 
+            <!-- 警告情報 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">警告履歴</h2>
+                {% if warnings and warnings|length > 0 %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-4 text-left">ID</th>
+                                    <th class="py-3 px-4 text-left">タイムスタンプ</th>
+                                    <th class="py-3 px-4 text-left">理由</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                {% for warning in warnings %}
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-4">{{ warning[0] }}</td>
+                                    <td class="py-3 px-4">{{ warning[1] }}</td>
+                                    <td class="py-3 px-4">{{ warning[2] or "なし" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-gray-600">警告履歴はありません。</p>
+                {% endif %}
+            </div>
 
-<!-- 注意情報 -->
-<h2>注意履歴</h2>
-{% if attentions and attentions|length > 0 %}
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>タイムスタンプ</th>
-            <th>睡眠時間</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for attention in attentions %}
-        <tr>
-            <td>{{ attention[0] }}</td>
-            <td>{{ attention[1] }}</td>
-            <td>{{ attention[2] or "なし" }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>注意履歴はありません。</p>
-{% endif %}
+            <!-- 開眼率情報 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">開眼率履歴</h2>
+                {% if eye_openness and eye_openness|length > 0 %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-4 text-left">ID</th>
+                                    <th class="py-3 px-4 text-left">タイムスタンプ</th>
+                                    <th class="py-3 px-4 text-left">右目の開眼率</th>
+                                    <th class="py-3 px-4 text-left">左目の開眼率</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                {% for openness in eye_openness %}
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-4">{{ openness[0] }}</td>
+                                    <td class="py-3 px-4">{{ openness[1] }}</td>
+                                    <td class="py-3 px-4">{{ openness[2] }}%</td>
+                                    <td class="py-3 px-4">{{ openness[3] }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-gray-600">開眼率データはありません。</p>
+                {% endif %}
+            </div>
 
-<!-- 警告情報 -->
-<h2>警告履歴</h2>
-{% if warnings and warnings|length > 0 %}
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>タイムスタンプ</th>
-            <th>理由</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for warning in warnings %}
-        <tr>
-            <td>{{ warning[0] }}</td>
-            <td>{{ warning[1] }}</td>
-            <td>{{ warning[2] or "なし" }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>警告履歴はありません。</p>
-{% endif %}
-
-<!-- 開眼率情報 -->
-<h2>開眼率履歴</h2>
-{% if eye_openness and eye_openness|length > 0 %}
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>タイムスタンプ</th>
-            <th>右目の開眼率</th>
-            <th>左目の開眼率</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for openness in eye_openness %}
-        <tr>
-            <td>{{ openness[0] }}</td>
-            <td>{{ openness[1] }}</td>
-            <td>{{ openness[2] }}%</td>
-            <td>{{ openness[3] }}%</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>開眼率データはありません。</p>
-{% endif %}
-
-<a href="{{ url_for('app.teacher.lecture.session', session_id=session_id) }}">講義詳細に戻る</a>
-
-
+            <div class="mt-6 text-center">
+                <a href="{{ url_for('app.teacher.lecture.session', session_id=session_id) }}" 
+                   class="text-gray-600 hover:text-blue-600 transition-colors">
+                    講義詳細に戻る
+                </a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
-
-   
-

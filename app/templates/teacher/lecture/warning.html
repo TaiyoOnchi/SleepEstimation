@@ -1,35 +1,72 @@
-<h1>警告作成ページ</h1>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>警告作成ページ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-b from-blue-50 to-white min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-md mx-auto">
+            <h1 class="text-4xl font-bold text-gray-900 mb-8">警告作成</h1>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">学生情報</h2>
+                <div class="space-y-2">
+                    <p><strong class="text-gray-600">学生番号:</strong> <span class="text-gray-800">{{ student_info.student_number }}</span></p>
+                    <p><strong class="text-gray-600">名前:</strong> <span class="text-gray-800">{{ student_info.last_name }} {{ student_info.first_name }}</span></p>
+                </div>
+            </div>
 
-<!-- 学生情報の表示 -->
-<p>学生番号: {{ student_info.student_number }}</p>
-<p>名前: {{ student_info.last_name }} {{ student_info.first_name }}</p>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <form action="{{ url_for('app.teacher.lecture.submit_warning') }}" method="post" class="space-y-4">
+                    <!-- セキュリティ用トークン -->
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- 学生情報の必須項目を非表示で送信 -->
+                    <input type="hidden" name="student_id" value="{{ student_info.id }}">
+                    <input type="hidden" name="student_number" value="{{ student_info.student_number }}">
+                    
+                    <!-- 理由入力欄 -->
+                    <div>
+                        <label for="reason" class="block text-gray-700 font-bold mb-2">理由:</label>
+                        <textarea id="reason" name="reason" required 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"></textarea>
+                    </div>
 
-<!-- 警告作成フォーム -->
-<form action="{{ url_for('app.teacher.lecture.submit_warning') }}" method="post">
-    <!-- セキュリティ用トークン -->
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    
-    <!-- 学生情報の必須項目を非表示で送信 -->
-    <input type="hidden" name="student_id" value="{{ student_info.id }}">
-    <input type="hidden" name="student_number" value="{{ student_info.student_number }}">
-    
-    <!-- 理由入力欄 -->
-    <label for="reason">理由:</label><br>
-    <textarea id="reason" name="reason" required></textarea><br><br>
+                    <!-- テンプレートボタン -->
+                    <div class="space-y-2">
+                        <p class="text-gray-700 font-bold">クイックテンプレート:</p>
+                        <div class="flex space-x-2">
+                            <button type="button" onclick="setTemplate('居眠り')" 
+                                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                                居眠り
+                            </button>
+                            <button type="button" onclick="setTemplate('話し声がうるさい')" 
+                                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                                話し声がうるさい
+                            </button>
+                            <button type="button" onclick="setTemplate('講義以外のものに気が散っていた')" 
+                                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                                気が散っていた
+                            </button>
+                        </div>
+                    </div>
 
-    <!-- テンプレートボタン -->
-    <button type="button" onclick="setTemplate('居眠り')">居眠り</button>
-    <button type="button" onclick="setTemplate('話し声がうるさい')">話し声がうるさい</button>
-    <button type="button" onclick="setTemplate('講義以外のものに気が散っていた')">講義以外のものに気が散っていた</button>
-    <br><br>
+                    <!-- 送信ボタン -->
+                    <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                        送信
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <!-- 送信ボタン -->
-    <button type="submit">送信</button>
-</form>
-
-<!-- JavaScript: 理由の入力欄にテンプレートをセット -->
-<script>
-    function setTemplate(text) {
-        document.getElementById('reason').value = text;
-    }
-</script>
+    <script>
+        function setTemplate(text) {
+            document.getElementById('reason').value = text;
+        }
+    </script>
+</body>
+</html>

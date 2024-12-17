@@ -2,29 +2,48 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>スケジュールの変更</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>スケジュールの変更</h1>
-    <form action="{{ url_for('app.teacher.lecture.start_session', subject_id=subject_id) }}" method="post">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<body class="bg-gradient-to-b from-blue-50 to-white min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-md mx-auto">
+            <h1 class="text-4xl font-bold text-gray-900 mb-8">スケジュールの変更</h1>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <form action="{{ url_for('app.teacher.lecture.start_session', subject_id=subject_id) }}" method="post" class="space-y-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <label for="day_of_week">曜日を選択:</label>
-        <select name="day_of_week" id="day_of_week" required>
-            <option value="月" {% if default_day_of_week == '月' %}selected{% endif %}>月曜日</option>
-            <option value="火" {% if default_day_of_week == '火' %}selected{% endif %}>火曜日</option>
-            <option value="水" {% if default_day_of_week == '水' %}selected{% endif %}>水曜日</option>
-            <option value="木" {% if default_day_of_week == '木' %}selected{% endif %}>木曜日</option>
-            <option value="金" {% if default_day_of_week == '金' %}selected{% endif %}>金曜日</option>
-        </select>
+                    <div>
+                        <label for="day_of_week" class="block text-gray-700 font-bold mb-2">曜日を選択:</label>
+                        <select name="day_of_week" id="day_of_week" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="月" {% if default_day_of_week == '月' %}selected{% endif %}>月曜日</option>
+                            <option value="火" {% if default_day_of_week == '火' %}selected{% endif %}>火曜日</option>
+                            <option value="水" {% if default_day_of_week == '水' %}selected{% endif %}>水曜日</option>
+                            <option value="木" {% if default_day_of_week == '木' %}selected{% endif %}>木曜日</option>
+                            <option value="金" {% if default_day_of_week == '金' %}selected{% endif %}>金曜日</option>
+                        </select>
+                    </div>
 
-        <label for="period">時限を選択:</label>
-        <input type="number" name="period" id="period" min="1" max="6" value="{{ default_period }}" required>
+                    <div>
+                        <label for="period" class="block text-gray-700 font-bold mb-2">時限を選択:</label>
+                        <input type="number" name="period" id="period" min="1" max="6" value="{{ default_period }}" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
 
-        <label for="classroom">教室:</label>
-        <input type="text" name="classroom" id="classroom" value="{{ default_classroom }}" required>
+                    <div>
+                        <label for="classroom" class="block text-gray-700 font-bold mb-2">教室:</label>
+                        <input type="text" name="classroom" id="classroom" value="{{ default_classroom }}" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
 
-        <button type="submit">講義を開始</button>
-    </form>
+                    <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                        講義を開始
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
