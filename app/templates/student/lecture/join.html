@@ -16,7 +16,12 @@
             
             <!-- 開講中の講義リスト -->
             {% if active_lectures %}
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">開講中の講義(参加する講義をクリックしてください)</h2>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">開講中の講義</h2>
+                <h4 class="font-semibold text-gray-700 text-red-500 mb-4">
+                    ※(参加する講義をクリックしてください)
+                </h4>
+                
+                
                 <ul id="lecture-list" class="mb-6 space-y-4">
                     {% for lecture in active_lectures %}
                         <li class="border rounded-lg p-4 bg-gray-50 cursor-pointer lecture-item" 

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, session,current_app
 from flask_login import current_user
-from app import socketio
 from app.utils import student_required
+from datetime import datetime
 
 
 
@@ -29,11 +29,16 @@ def main():
 
     if lecture_info:
         student_participation_id = lecture_info[0]
+        
+        # 日時の変換処理（start_time をフォーマット）
+        start_time = datetime.strptime(lecture_info[4], '%Y-%m-%d %H:%M:%S.%f')  # データベースのフォーマットに応じて調整
+        formatted_start_time = start_time.strftime('%Y-%m-%d %H:%M')
+
         current_lecture = {
             "classroom": lecture_info[1],
             "day_of_week": lecture_info[2],
             "period": lecture_info[3],
-            "start_time": lecture_info[4]
+            "start_time": formatted_start_time  # フォーマット後の時刻を格納
         }
         subject_id = lecture_info[5]  # subject_id を取得
         seat_number = lecture_info[6]  # 座席番号を取得

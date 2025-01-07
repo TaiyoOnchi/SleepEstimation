@@ -261,6 +261,14 @@ def session(session_id):
     # session_idに基づいて講義回の詳細を取得
     cursor.execute("SELECT * FROM subject_counts WHERE id = ?", (session_id,))
     lecture_session = cursor.fetchone()
+    
+    # 日時のフォーマットを追加
+    if lecture_session:
+        lecture_session = {
+            **lecture_session,
+            'start_time': datetime.strptime(lecture_session['start_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if lecture_session['start_time'] else None,
+            'end_time': datetime.strptime(lecture_session['end_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if lecture_session['end_time'] else None,
+        }
 
     # 講義回に参加している学生の詳細を取得
     cursor.execute("""
@@ -271,6 +279,14 @@ def session(session_id):
         WHERE student_participations.subject_count_id = ?
     """, (session_id,))
     student_participations = cursor.fetchall()
+    
+    # 学生のattendance_timeをフォーマット
+    formatted_student_participations = []
+    for student in student_participations:
+        formatted_student_participations.append({
+            **student,
+            'attendance_time': datetime.strptime(student['attendance_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if student['attendance_time'] else None,
+        })
     
     
     # 現在時刻の1分前を取得
@@ -291,11 +307,19 @@ def session(session_id):
     ''', (session_id, one_minute_ago, datetime.now()))
 
     inactive_students = cursor.fetchall()
+    
+    # inactive_studentsのattendance_timeをフォーマット
+    formatted_inactive_students = []
+    for student in inactive_students:
+        formatted_inactive_students.append({
+            **student,
+            'attendance_time': datetime.strptime(student['attendance_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if student['attendance_time'] else None,
+        })
 
     return render_template('teacher/lecture/session.html', 
                            lecture_session=lecture_session, 
-                           student_participations=student_participations,
-                           inactive_students=inactive_students
+                           student_participations=formatted_student_participations,
+                           inactive_students=formatted_inactive_students
                            )
     
     
