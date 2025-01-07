@@ -13,42 +13,34 @@
         <div class="bg-white rounded-lg shadow-md p-6 max-w-xl w-full">
             <h1 class="text-2xl font-bold text-gray-800 mb-6">講義に参加</h1>
             
-            
-            <!-- 開講中の講義リスト -->
-            {% if active_lectures %}
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">開講中の講義</h2>
-                <h4 class="font-semibold text-gray-700 text-red-500 mb-4">
-                    ※(参加する講義をクリックしてください)
-                </h4>
-                
-                
-                <ul id="lecture-list" class="mb-6 space-y-4">
+            <!-- ドロップダウンメニュー -->
+            <div class="relative mb-6">
+                <button id="dropdownButton" type="button" 
+                        class="w-full bg-white border rounded-lg px-4 py-2 text-left shadow-md hover:bg-gray-100 focus:ring focus:ring-blue-500">
+                    講義を選択してください
+                    <svg class="absolute top-2/4 right-3 -translate-y-2/4 w-4 h-4 text-gray-600" 
+                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 15a1 1 0 01-.707-.293l-5-5a1 1 0 111.414-1.414L10 12.586l4.293-4.293a1 1 0 111.414 1.414l-5 5A1 1 0 01-707-.293z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <ul id="dropdownMenu" class="hidden absolute z-10 w-full bg-white border rounded-lg shadow-md mt-2">
                     {% for lecture in active_lectures %}
-                        <li class="border rounded-lg p-4 bg-gray-50 cursor-pointer lecture-item" 
-                            data-session-id="{{ lecture.session_id }}">
-                            <p class="text-lg font-medium text-gray-800">{{ lecture.subject_name }}</p>
-                            <p class="text-sm text-gray-600">教室: {{ lecture.classroom }}</p>
-                            <p class="text-sm text-gray-600">曜日: {{ lecture.day_of_week }}</p>
-                            <p class="text-sm text-gray-600">時限: {{ lecture.period }}</p>
-                            <p class="text-sm text-gray-600">開始時間: {{ lecture.start_time }}</p>
-                        </li>
+                    <li class="px-4 py-2 hover:bg-blue-100 cursor-pointer lecture-item" 
+                        data-session-id="{{ lecture.session_id }}">
+                        【{{ lecture.subject_name }}】 教室：{{ lecture.classroom }},　曜日：{{ lecture.day_of_week }},　時限：{{ lecture.period }}
+                    </li>
                     {% endfor %}
                 </ul>
-            {% else %}
-                <p class="text-gray-700 mb-6">開講中の講義はありません。</p>
-            {% endif %}
+            </div>
 
             <!-- 参加コード入力フォーム -->
             <form method="POST" class="space-y-4">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <!-- 選択した講義の session_id を保存 -->
-                <input type="hidden" id="selected-session-id" name="session_id" value="">
+                <input type="hidden" id="session-id" name="session_id" value="">
                 
                 <label for="join_code" class="block text-gray-700 font-medium">参加コード:</label>
                 <input type="number" id="join_code" name="join_code" class="w-full border rounded-lg px-3 py-2" min="0000" max="9999" required>
 
-
-                <!-- 座席番号入力フィールド -->
                 <label for="seat_number" class="block text-gray-700 font-medium">座席番号:</label>
                 <input type="number" id="seat_number" name="seat_number" class="w-full border rounded-lg px-3 py-2" min="1" required>
 
@@ -64,35 +56,37 @@
         </a>
     </div>
     <script>
-        const lectureItems = document.querySelectorAll('.lecture-item');
-        const selectedSessionInput = document.getElementById('selected-session-id');
-    
-        lectureItems.forEach(item => {
-            item.addEventListener('click', () => {
-                // 全てのアイテムから選択スタイルを削除
-                lectureItems.forEach(i => i.classList.remove('bg-blue-100', 'border-blue-500'));
-    
-                // クリックされたアイテムに選択スタイルを追加
-                item.classList.add('bg-blue-100', 'border-blue-500');
-    
-                // 選択された session_id を hidden input に設定
-                selectedSessionInput.value = item.dataset.sessionId;
-            });
+        const dropdownButton = document.getElementById('dropdownButton');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const dropdownLectureItems = document.querySelectorAll('.lecture-item');
+        const dropdownSessionInput = document.getElementById('session-id');
+
+        // ドロップダウンの表示/非表示を切り替え
+        dropdownButton.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('hidden');
         });
-    
-        // URLクエリパラメータからalert_messageを取得する
-        const urlParams = new URLSearchParams(window.location.search);
-        const alertMessage = urlParams.get("alert_message");
-    
-        // アラートメッセージがある場合に表示
-        if (alertMessage) {
-            alert(alertMessage);
-    
-            // URLからクエリパラメータを消去
-            const newURL = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, document.title, newURL);
-        }
+
+        // 講義を選択したときに session_id を保存
+        dropdownLectureItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const sessionId = item.getAttribute('data-session-id');
+                dropdownSessionInput.value = sessionId;
+            
+                // ボタンに選択した講義名を表示
+                dropdownButton.textContent = item.textContent.trim();
+            
+                // ドロップダウンを閉じる
+                dropdownMenu.classList.add('hidden');
+            });
+            
+        });
+
+        // ページ外をクリックしたらドロップダウンを閉じる
+        document.addEventListener('click', (event) => {
+            if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
     </script>
-    
 </body>
 </html>
