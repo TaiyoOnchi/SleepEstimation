@@ -130,7 +130,6 @@
                         <table class="w-full">
                             <thead>
                                 <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                                    <th class="py-3 px-4 text-left">ID</th>
                                     <th class="py-3 px-4 text-left">タイムスタンプ</th>
                                     <th class="py-3 px-4 text-left">右目の開眼率</th>
                                     <th class="py-3 px-4 text-left">左目の開眼率</th>
@@ -140,9 +139,8 @@
                                 {% for openness in eye_openness %}
                                 <tr class="border-b border-gray-200 hover:bg-gray-100">
                                     <td class="py-3 px-4">{{ openness[0] }}</td>
-                                    <td class="py-3 px-4">{{ openness[1] }}</td>
+                                    <td class="py-3 px-4">{{ openness[1] }}%</td>
                                     <td class="py-3 px-4">{{ openness[2] }}%</td>
-                                    <td class="py-3 px-4">{{ openness[3] }}%</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

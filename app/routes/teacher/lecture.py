@@ -535,7 +535,7 @@ def session_student_details(session_id, student_id):
 
     # eye_openness情報を取得
     cursor.execute('''
-        SELECT id, timestamp, right_eye_openness, left_eye_openness
+        SELECT timestamp, right_eye_openness, left_eye_openness
         FROM eye_openness
         WHERE student_participation_id = (
             SELECT id

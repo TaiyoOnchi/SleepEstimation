@@ -180,33 +180,36 @@
                 
                 newRow.setAttribute('data-student-number', data.student_number);
             
+                // 時刻を加工して秒を除去
+                function formatTimeWithoutSeconds(timeString) {
+                    const [hours, minutes] = timeString.split(':');
+                    return `${hours}:${minutes}`;
+                }
+            
+                const formattedAttendanceTime = formatTimeWithoutSeconds(data.attendance_time);
+            
                 // セルを作成し、クラスを付与
                 const studentNumberCell = newRow.insertCell(0);
                 const studentLink = document.createElement('a');
                 studentLink.href = `/teacher/session/${sessionId}/student/${data.id}`;
                 studentLink.textContent = data.student_number;
-                studentNumberCell.appendChild(studentLink);
-
-                    // クラスを追加
                 studentLink.classList.add('text-blue-600', 'hover:underline');
                 studentNumberCell.appendChild(studentLink);
             
                 newRow.insertCell(1).textContent = `${data.last_name} ${data.first_name}`;
                 newRow.insertCell(2).textContent = `${data.kana_last_name} ${data.kana_first_name}`;
-                
                 newRow.insertCell(3).textContent = data.seat_number;
-                newRow.insertCell(4).textContent = data.attendance_time;
             
-                // 注意回数セルにクラスを追加
+                // 加工した時刻を表示
+                newRow.insertCell(4).textContent = formattedAttendanceTime;
+            
                 const attentionCell = newRow.insertCell(5);
                 attentionCell.textContent = data.attention_count;
                 attentionCell.classList.add('attention-count');
             
-                // 警告回数セル
                 const warningCell = newRow.insertCell(6);
                 warningCell.textContent = data.warning_count;
             
-                // 警告送信リンク
                 const actionCell = newRow.insertCell(7);
                 const warningLink = document.createElement('a');
                 warningLink.href = `/teacher/create_warning?student_id=${data.id}`;
@@ -217,6 +220,7 @@
                 // ソートを適用
                 sortTableByAttention();
             });
+            
             
             
 
