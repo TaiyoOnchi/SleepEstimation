@@ -279,14 +279,15 @@ def session(session_id):
         WHERE student_participations.subject_count_id = ?
     """, (session_id,))
     student_participations = cursor.fetchall()
+    student_participations=format_times(student_participations,'attendance_time')
     
-    # 学生のattendance_timeをフォーマット
-    formatted_student_participations = []
-    for student in student_participations:
-        formatted_student_participations.append({
-            **student,
-            'attendance_time': datetime.strptime(student['attendance_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if student['attendance_time'] else None,
-        })
+    # # 学生のattendance_timeをフォーマット
+    # formatted_student_participations = []
+    # for student in student_participations:
+    #     formatted_student_participations.append({
+    #         **student,
+    #         'attendance_time': datetime.strptime(student['attendance_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if student['attendance_time'] else None,
+    #     })
     
     
     # 現在時刻の1分前を取得
@@ -307,19 +308,20 @@ def session(session_id):
     ''', (session_id, one_minute_ago, datetime.now()))
 
     inactive_students = cursor.fetchall()
+    inactive_students=format_times(inactive_students,'attendance_time')
     
-    # inactive_studentsのattendance_timeをフォーマット
-    formatted_inactive_students = []
-    for student in inactive_students:
-        formatted_inactive_students.append({
-            **student,
-            'attendance_time': datetime.strptime(student['attendance_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if student['attendance_time'] else None,
-        })
+    # # inactive_studentsのattendance_timeをフォーマット
+    # formatted_inactive_students = []
+    # for student in inactive_students:
+    #     formatted_inactive_students.append({
+    #         **student,
+    #         'attendance_time': datetime.strptime(student['attendance_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if student['attendance_time'] else None,
+    #     })
 
     return render_template('teacher/lecture/session.html', 
                            lecture_session=lecture_session, 
-                           student_participations=formatted_student_participations,
-                           inactive_students=formatted_inactive_students
+                           student_participations=student_participations,
+                           inactive_students=inactive_students
                            )
     
     
@@ -350,6 +352,7 @@ def check_eye_openness():
     ''', (session_id, one_minute_ago, datetime.now()))
 
     inactive_students = cursor.fetchall()
+    inactive_students=format_times(inactive_students,'attendance_time')
 
 
     # 学生リストを整形して返却
@@ -505,6 +508,14 @@ def session_student_details(session_id, student_id):
         WHERE student_subject_id = ? AND subject_count_id = ?
     ''', (student_subject_id, session_id))
     participation_info = cursor.fetchone()
+    
+    # 日時のフォーマットを追加
+    if participation_info:
+        participation_info = {
+            **participation_info,
+            'attendance_time': datetime.strptime(participation_info['attendance_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if participation_info['attendance_time'] else None,
+            'exit_time': datetime.strptime(participation_info['exit_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if participation_info['exit_time'] else None,
+        }
 
 
 
@@ -520,6 +531,10 @@ def session_student_details(session_id, student_id):
         )
     ''', (student_subject_id, session_id))
     attentions = cursor.fetchall()
+    attentions= format_times(attentions,'timestamp')
+    
+
+
 
     # warnings情報を取得
     cursor.execute('''
@@ -532,6 +547,8 @@ def session_student_details(session_id, student_id):
         )
     ''', (student_subject_id, session_id))
     warnings = cursor.fetchall()
+    warnings= format_times(warnings,'timestamp')
+    
 
     # eye_openness情報を取得
     cursor.execute('''
@@ -544,7 +561,7 @@ def session_student_details(session_id, student_id):
         )
     ''', (student_subject_id, session_id))
     eye_openness = cursor.fetchall()
-
+    eye_openness= format_times(eye_openness,'timestamp')
    
 
     return render_template('teacher/lecture/session_student_details.html',
@@ -556,3 +573,24 @@ def session_student_details(session_id, student_id):
                         eye_openness=eye_openness,
                         session_id=session_id)
 
+
+def format_times(data, key):
+    """
+    指定したキーの値をフォーマットする関数。
+    :param data: 辞書のリストまたはsqlite3.Rowのリスト
+    :param key: フォーマット対象のキー名
+    :return: フォーマット済みの辞書リスト
+    """
+    formatted = []
+    for item in data:
+        # sqlite3.Rowを辞書に変換
+        item_dict = dict(item)
+        formatted.append({
+            **item_dict,
+            key: (
+                datetime.strptime(str(item_dict[key])[:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') 
+                if item_dict.get(key) 
+                else None
+            ),
+        })
+    return formatted

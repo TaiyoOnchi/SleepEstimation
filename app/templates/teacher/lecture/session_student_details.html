@@ -10,6 +10,12 @@
     <div class="container mx-auto px-4 py-12">
         <div class="max-w-6xl mx-auto">
             <h1 class="text-4xl font-bold text-gray-900 mb-8">学生詳細情報</h1>
+            <div class="mt-6 text-center">
+                <a href="{{ url_for('app.teacher.lecture.session', session_id=session_id) }}" 
+                   class="text-gray-600 hover:text-blue-600 transition-colors">
+                    講義詳細に戻る
+                </a>
+            </div>
 
             {% include 'partials/flash_messages.html' %}
 
@@ -54,10 +60,10 @@
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">出席情報</h2>
                 {% if participation_info %}
                     <ul class="space-y-2">
-                        <li><strong class="text-gray-600">出席時間:</strong> <span class="text-gray-800">{{ participation_info[0] or "未登録" }}</span></li>
-                        <li><strong class="text-gray-600">退出時間:</strong> <span class="text-gray-800">{{ participation_info[1] or "未登録" }}</span></li>
-                        <li><strong class="text-gray-600">注意回数:</strong> <span class="text-gray-800">{{ participation_info[2] }}</span></li>
-                        <li><strong class="text-gray-600">警告回数:</strong> <span class="text-gray-800">{{ participation_info[3] }}</span></li>
+                        <li><strong class="text-gray-600">出席時間:</strong> <span class="text-gray-800">{{ participation_info.attendance_time or "未登録" }}</span></li>
+                        <li><strong class="text-gray-600">退出時間:</strong> <span class="text-gray-800">{{ participation_info.exit_time or "未登録" }}</span></li>
+                        <li><strong class="text-gray-600">注意回数:</strong> <span class="text-gray-800">{{ participation_info.attention_count }}</span></li>
+                        <li><strong class="text-gray-600">警告回数:</strong> <span class="text-gray-800">{{ participation_info.warning_count }}</span></li>
                     </ul>
                 {% else %}
                     <p class="text-gray-600">出席情報が見つかりませんでした。</p>
@@ -72,7 +78,6 @@
                         <table class="w-full">
                             <thead>
                                 <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                                    <th class="py-3 px-4 text-left">ID</th>
                                     <th class="py-3 px-4 text-left">タイムスタンプ</th>
                                     <th class="py-3 px-4 text-left">睡眠時間</th>
                                 </tr>
@@ -80,9 +85,8 @@
                             <tbody class="text-gray-700">
                                 {% for attention in attentions %}
                                 <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-3 px-4">{{ attention[0] }}</td>
-                                    <td class="py-3 px-4">{{ attention[1] }}</td>
-                                    <td class="py-3 px-4">{{ attention[2] or "なし" }}</td>
+                                    <td class="py-3 px-4">{{ attention.timestamp }}</td>
+                                    <td class="py-3 px-4">{{ attention.sleep_time or "なし" }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -101,7 +105,6 @@
                         <table class="w-full">
                             <thead>
                                 <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                                    <th class="py-3 px-4 text-left">ID</th>
                                     <th class="py-3 px-4 text-left">タイムスタンプ</th>
                                     <th class="py-3 px-4 text-left">理由</th>
                                 </tr>
@@ -109,9 +112,8 @@
                             <tbody class="text-gray-700">
                                 {% for warning in warnings %}
                                 <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-3 px-4">{{ warning[0] }}</td>
-                                    <td class="py-3 px-4">{{ warning[1] }}</td>
-                                    <td class="py-3 px-4">{{ warning[2] or "なし" }}</td>
+                                    <td class="py-3 px-4">{{ warning.timestamp }}</td>
+                                    <td class="py-3 px-4">{{ warning.reason or "なし" }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -138,9 +140,9 @@
                             <tbody class="text-gray-700">
                                 {% for openness in eye_openness %}
                                 <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-3 px-4">{{ openness[0] }}</td>
-                                    <td class="py-3 px-4">{{ openness[1] }}%</td>
-                                    <td class="py-3 px-4">{{ openness[2] }}%</td>
+                                    <td class="py-3 px-4">{{ openness.timestamp }}</td>
+                                    <td class="py-3 px-4">{{ openness.right_eye_openness}}%</td>
+                                    <td class="py-3 px-4">{{ openness.left_eye_openness }}%</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
