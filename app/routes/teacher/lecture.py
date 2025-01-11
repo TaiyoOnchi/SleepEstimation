@@ -354,24 +354,7 @@ def check_eye_openness():
     inactive_students = cursor.fetchall()
     inactive_students=format_times(inactive_students,'attendance_time')
 
-
-    # 学生リストを整形して返却
-    formatted_students = [
-        {
-            'id': student[0],
-            'student_number': student[1],
-            'kana_last_name': student[4],
-            'kana_first_name': student[5],
-            'last_name': student[2],
-            'first_name': student[3],
-            'seat_number': student[9],
-            'attendance_time': student[6],
-            'attention_count': student[7],
-            'warning_count': student[8]
-        }
-        for student in inactive_students
-    ]
-    return jsonify({'inactive_students': formatted_students})
+    return jsonify({'inactive_students': inactive_students})
 
 
 
