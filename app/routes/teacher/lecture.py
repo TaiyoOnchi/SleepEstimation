@@ -290,10 +290,10 @@ def session(session_id):
     #     })
     
     
-    # 現在時刻の1分前を取得
-    one_minute_ago = datetime.now() - timedelta(minutes=1)
+    # 現在時刻の30秒前を取得
+    one_minute_ago = datetime.now() - timedelta(minutes=0.5)
 
-    # 開眼率が1分間記録されていない学生を取得
+    # 開眼率が30秒間記録されていない学生を取得
     cursor.execute('''
         SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_first_name,student_participations.attendance_time, student_participations.attention_count, student_participations.warning_count,student_participations.seat_number
         FROM student_participations 
@@ -334,10 +334,10 @@ def check_eye_openness():
     conn = current_app.get_db()
     cursor = conn.cursor()
 
-    # 現在時刻の1分前を取得
-    one_minute_ago = datetime.now() - timedelta(minutes=1)
+    # 現在時刻の30秒前を取得
+    one_minute_ago = datetime.now() - timedelta(minutes=0.5)
 
-    # 開眼率が1分間記録されていない学生を取得
+    # 開眼率が30秒間記録されていない学生を取得
     cursor.execute('''
         SELECT students.id, students.student_number, students.last_name, students.first_name, students.kana_last_name,students.kana_first_name,student_participations.attendance_time, student_participations.attention_count, student_participations.warning_count,student_participations.seat_number
         FROM student_participations 
