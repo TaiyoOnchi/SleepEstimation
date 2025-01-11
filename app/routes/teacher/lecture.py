@@ -453,6 +453,35 @@ def submit_warning():
 def session_student_details(session_id, student_id):
     conn = current_app.get_db()
     cursor = conn.cursor()
+    
+    # `subjectsのero_threshold` を取得
+    cursor.execute('''
+        SELECT subject_id
+        FROM subject_counts
+        WHERE subject_counts.id = ?
+    ''', (session_id,))
+    subject_id_row = cursor.fetchone()
+
+    # subject_id_row がタプル形式の場合
+    if subject_id_row:
+        subject_id = subject_id_row[0]  # sqlite3.Row から subject_id を取得
+
+        cursor.execute('''
+            SELECT ero_threshold
+            FROM subjects
+            WHERE subjects.id = ?
+        ''', (subject_id,))
+        ero_threshold_row = cursor.fetchone()
+
+        if ero_threshold_row:
+            ero_threshold = ero_threshold_row[0]  # ero_threshold を取得
+        else:
+            raise ValueError("ero_threshold could not be found for the given subject_id")
+    else:
+        raise ValueError("subject_id could not be found for the given session_id")
+    
+
+
 
     # `student_subject_id` を取得
     cursor.execute('''
@@ -554,7 +583,8 @@ def session_student_details(session_id, student_id):
                         attentions=attentions,
                         warnings=warnings,
                         eye_openness=eye_openness,
-                        session_id=session_id)
+                        session_id=session_id,
+                        ero_threshold=ero_threshold)
 
 
 def format_times(data, key):

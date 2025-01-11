@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>学生詳細情報</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gradient-to-b from-blue-50 to-white min-h-screen">
@@ -128,26 +130,11 @@
             <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">開眼率履歴</h2>
                 {% if eye_openness and eye_openness|length > 0 %}
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                                    <th class="py-3 px-4 text-left">タイムスタンプ</th>
-                                    <th class="py-3 px-4 text-left">右目の開眼率</th>
-                                    <th class="py-3 px-4 text-left">左目の開眼率</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-gray-700">
-                                {% for openness in eye_openness %}
-                                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-3 px-4">{{ openness.timestamp }}</td>
-                                    <td class="py-3 px-4">{{ openness.right_eye_openness}}%</td>
-                                    <td class="py-3 px-4">{{ openness.left_eye_openness }}%</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                    <canvas id="eyeOpennessChart" width="400" height="200"></canvas>
+                    <script>
+                        // Flask から受け取ったデータを JavaScript に渡す
+                        const eyeOpennessData = {{ eye_openness | tojson }};
+                    </script>
                 {% else %}
                     <p class="text-gray-600">開眼率データはありません。</p>
                 {% endif %}
@@ -161,5 +148,97 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const ero_threshold = {{ ero_threshold | tojson }};
+        if (eyeOpennessData) {
+            const timestamps = eyeOpennessData.map(data => {
+                const date = new Date(data.timestamp);
+                return date.toTimeString().slice(0, 5); // HH:mm の形式を抽出
+            });
+            const rightEyeOpenness = eyeOpennessData.map(data => data.right_eye_openness);
+            const leftEyeOpenness = eyeOpennessData.map(data => data.left_eye_openness);
+
+            // Chart.js カスタムプラグイン定義
+            const thresholdLinePlugin = {
+                id: 'thresholdLine',
+                beforeDraw(chart) {
+                    const { ctx, scales: { y } } = chart;
+
+                    // ero_threshold の赤線
+                    if (ero_threshold !== undefined) {
+                        ctx.save();
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([5, 5]); // 点線
+                        ctx.beginPath();
+                        ctx.moveTo(chart.chartArea.left, y.getPixelForValue(ero_threshold));
+                        ctx.lineTo(chart.chartArea.right, y.getPixelForValue(ero_threshold));
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+
+                    // 100% の緑線
+                    ctx.save();
+                    ctx.strokeStyle = 'green';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([]);
+                    ctx.beginPath();
+                    ctx.moveTo(chart.chartArea.left, y.getPixelForValue(100));
+                    ctx.lineTo(chart.chartArea.right, y.getPixelForValue(100));
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            };
+
+            // Chart.js のインスタンス作成
+            const ctx = document.getElementById('eyeOpennessChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [
+                        {
+                            label: '右目の開眼率',
+                            data: rightEyeOpenness,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true,
+                            tension: 0.4,
+                        },
+                        {
+                            label: '左目の開眼率',
+                            data: leftEyeOpenness,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: true,
+                            tension: 0.4,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: '時間 (HH:mm)' },
+                        },
+                        y: {
+                            title: { display: true, text: '開眼率 (%)' },
+                            min: 0,
+                            max: 150,
+                        },
+                    },
+                },
+                plugins: [thresholdLinePlugin], // プラグインを適用
+            });
+        }
+
+
+    </script>
+    
+    
 </body>
 </html>
