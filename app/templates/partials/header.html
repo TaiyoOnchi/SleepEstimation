@@ -1,4 +1,5 @@
 <!-- header.html -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 <header class="bg-gradient-to-r from-blue-600 to-blue-800 shadow-md">
   <div class="container mx-auto px-4 py-3">
     <div class="flex justify-between items-center">
@@ -11,31 +12,54 @@
                     {{ url_for('app.home.top.top') }}
                 {% endif %}" 
          class="text-2xl font-bold text-white hover:text-blue-200 transition duration-300">
-        EORシステム
+        <i class="fas fa-graduation-cap mr-2"></i>EORシステム
       </a>
 
       <nav class="hidden md:flex space-x-4">
         {% if current_user.is_authenticated %}
           {% if current_user.role == 'student' %}
-            <a href="{{ url_for('app.student.lecture.register') }}" class="text-white hover:text-blue-200 transition duration-300">履修科目一覧</a>
-            <a href="{{ url_for('app.student.lecture.join') }}" class="text-white hover:text-blue-200 transition duration-300">講義に参加する</a>
-            <a href="{{ url_for('app.auth.logout') }}" class="text-white hover:text-blue-200 transition duration-300">ログアウト</a>
+            <a href="{{ url_for('app.student.dashboard.dashboard') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+              <i class="fas fa-tachometer-alt mr-1"></i>ダッシュボード
+            </a>
+            <a href="{{ url_for('app.student.lecture.register') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+              <i class="fas fa-book-open mr-1"></i>履修科目一覧
+            </a>
+            <a href="{{ url_for('app.student.lecture.join') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+              <i class="fas fa-users mr-1"></i>講義に参加する
+            </a>
+            <a href="{{ url_for('app.auth.logout') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+              <i class="fas fa-sign-out-alt mr-1"></i>ログアウト
+            </a>
           {% elif current_user.role == 'teacher' %}
-            <a href="{{ url_for('app.auth.logout') }}" class="text-white hover:text-blue-200 transition duration-300">ログアウト</a>
+            <a href="{{ url_for('app.teacher.dashboard.dashboard') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+              <i class="fas fa-tachometer-alt mr-1"></i>ダッシュボード
+            </a>
+            <a href="{{ url_for('app.teacher.lecture.new') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+              <i class="fas fa-plus-circle mr-1"></i>新しい講義を作成
+            </a>
+            <a href="{{ url_for('app.auth.logout') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+              <i class="fas fa-sign-out-alt mr-1"></i>ログアウト
+            </a>
           {% endif %}
         {% else %}
-          <a href="{{ url_for('app.student.register.register') }}" class="text-white hover:text-blue-200 transition duration-300">学生サインアップ</a>
-          <a href="{{ url_for('app.student.login.login') }}" class="text-white hover:text-blue-200 transition duration-300">学生ログイン</a>
-          <a href="{{ url_for('app.teacher.register.register') }}" class="text-white hover:text-blue-200 transition duration-300">教員サインアップ</a>
-          <a href="{{ url_for('app.teacher.login.login') }}" class="text-white hover:text-blue-200 transition duration-300">教員ログイン</a>
+          <a href="{{ url_for('app.student.register.register') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+            <i class="fas fa-user-plus mr-1"></i>学生サインアップ
+          </a>
+          <a href="{{ url_for('app.student.login.login') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+            <i class="fas fa-sign-in-alt mr-1"></i>学生ログイン
+          </a>
+          <a href="{{ url_for('app.teacher.register.register') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+            <i class="fas fa-chalkboard-teacher mr-1"></i>教員サインアップ
+          </a>
+          <a href="{{ url_for('app.teacher.login.login') }}" class="flex items-center text-white hover:text-blue-200 transition duration-300">
+            <i class="fas fa-sign-in-alt mr-1"></i>教員ログイン
+          </a>
         {% endif %}
       </nav>
 
       <!-- モバイルメニューボタン -->
       <button class="md:hidden text-white focus:outline-none" id="mobile-menu-button">
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-        </svg>
+        <i class="fas fa-bars h-6 w-6"></i>
       </button>
     </div>
 
@@ -43,17 +67,33 @@
     <div class="md:hidden hidden mt-2" id="mobile-menu">
       {% if current_user.is_authenticated %}
         {% if current_user.role == 'student' %}
-          <a href="{{ url_for('app.student.lecture.register') }}" class="block py-2 text-white hover:bg-blue-700">履修科目一覧</a>
-          <a href="{{ url_for('app.student.lecture.join') }}" class="block py-2 text-white hover:bg-blue-700">講義に参加する</a>
-          <a href="{{ url_for('app.auth.logout') }}" class="block py-2 text-white hover:bg-blue-700">ログアウト</a>
+          <a href="{{ url_for('app.student.lecture.register') }}" class="flex items-center py-2 text-white hover:bg-blue-700">
+            <i class="fas fa-book-open mr-2"></i>履修科目一覧
+          </a>
+          <a href="{{ url_for('app.student.lecture.join') }}" class="flex items-center py-2 text-white hover:bg-blue-700">
+            <i class="fas fa-users mr-2"></i>講義に参加する
+          </a>
+          <a href="{{ url_for('app.auth.logout') }}" class="flex items-center py-2 text-white hover:bg-blue-700">
+            <i class="fas fa-sign-out-alt mr-2"></i>ログアウト
+          </a>
         {% elif current_user.role == 'teacher' %}
-          <a href="{{ url_for('app.auth.logout') }}" class="block py-2 text-white hover:bg-blue-700">ログアウト</a>
+          <a href="{{ url_for('app.auth.logout') }}" class="flex items-center py-2 text-white hover:bg-blue-700">
+            <i class="fas fa-sign-out-alt mr-2"></i>ログアウト
+          </a>
         {% endif %}
       {% else %}
-        <a href="{{ url_for('app.student.register.register') }}" class="block py-2 text-white hover:bg-blue-700">学生サインアップ</a>
-        <a href="{{ url_for('app.student.login.login') }}" class="block py-2 text-white hover:bg-blue-700">学生ログイン</a>
-        <a href="{{ url_for('app.teacher.register.register') }}" class="block py-2 text-white hover:bg-blue-700">教員サインアップ</a>
-        <a href="{{ url_for('app.teacher.login.login') }}" class="block py-2 text-white hover:bg-blue-700">教員ログイン</a>
+        <a href="{{ url_for('app.student.register.register') }}" class="flex items-center py-2 text-white hover:bg-blue-700">
+          <i class="fas fa-user-plus mr-2"></i>学生サインアップ
+        </a>
+        <a href="{{ url_for('app.student.login.login') }}" class="flex items-center py-2 text-white hover:bg-blue-700">
+          <i class="fas fa-sign-in-alt mr-2"></i>学生ログイン
+        </a>
+        <a href="{{ url_for('app.teacher.register.register') }}" class="flex items-center py-2 text-white hover:bg-blue-700">
+          <i class="fas fa-chalkboard-teacher mr-2"></i>教員サインアップ
+        </a>
+        <a href="{{ url_for('app.teacher.login.login') }}" class="flex items-center py-2 text-white hover:bg-blue-700">
+          <i class="fas fa-sign-in-alt mr-2"></i>教員ログイン
+        </a>
       {% endif %}
     </div>
   </div>
