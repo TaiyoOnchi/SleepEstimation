@@ -248,6 +248,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 
         # 三回連続で閾値以下の場合、通知を表示
         elif low_eye_openness_count[student_number] > 0 and low_eye_openness_count[student_number] % 3 == 0:
+            socketio.emit('low_eye_openness_warning', {}, room=student_number)
             socketio.emit('low_eye_openness_alert', {'message': '開眼率が低下しています！'}, room=student_number)
 
 
@@ -336,3 +337,26 @@ def get_attention_count(participation_id):
     ''', (participation_id,))
     result = cursor.fetchone()
     return result[0] if result else 0
+
+
+
+
+@socketio.on('adjust_baseline')
+@student_required
+def adjust_baseline(data):
+    if data['adjust'] == 'yes':
+        student_number = current_user.student_number
+        conn = current_app.get_db()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE students
+            SET right_eye_baseline = right_eye_baseline * 0.95,
+                left_eye_baseline = left_eye_baseline * 0.95
+            WHERE student_number = ?
+        ''', (student_number,))
+        conn.commit()
+
+        # 更新後の基準値を通知
+        socketio.emit('baseline_adjusted', {'message': '基準値を5%下げました。'}, room=student_number)
+    else:
+        socketio.emit('baseline_adjusted', {'message': '基準値の変更はキャンセルされました。'}, room=student_number)

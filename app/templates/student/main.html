@@ -213,6 +213,66 @@
             window.location.href = data.redirect_url;
         });
         
+        socket.on('low_eye_openness_warning', function() {
+            const dialogContainer = document.createElement('div');
+            dialogContainer.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50';
+            
+            dialogContainer.innerHTML = `
+                <div class="bg-white p-4 rounded-lg shadow-lg">
+                    <p class="text-gray-800 mb-4">開眼率が低下しています、眠たいですか？</p>
+                    <div class="flex justify-between">
+                        <button id="yes-btn" class="bg-green-500 text-white px-4 py-2 rounded">はい</button>
+                        <button id="no-btn" class="bg-red-500 text-white px-4 py-2 rounded">いいえ(誤検出)</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialogContainer);
+        
+            document.getElementById('yes-btn').onclick = function() {
+                socket.emit('response_low_eye_openness', { response: 'yes' });
+                document.body.removeChild(dialogContainer);
+            };
+        
+            document.getElementById('no-btn').onclick = function() {
+                document.body.removeChild(dialogContainer);
+            
+                const baselineDialog = document.createElement('div');
+                baselineDialog.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50';
+                
+                baselineDialog.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg shadow-lg">
+                        <p class="text-gray-800 mb-4">開眼率の基準値を下げますか？</p>
+                        <div class="flex justify-between">
+                            <button id="lower-baseline-yes" class="bg-green-500 text-white px-4 py-2 rounded">はい</button>
+                            <button id="lower-baseline-no" class="bg-red-500 text-white px-4 py-2 rounded">いいえ</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(baselineDialog);
+            
+                document.getElementById('lower-baseline-yes').onclick = function() {
+                    socket.emit('adjust_baseline', { adjust: 'yes' });
+                    document.body.removeChild(baselineDialog);
+                };
+            
+                document.getElementById('lower-baseline-no').onclick = function() {
+                    socket.emit('adjust_baseline', { adjust: 'no' });
+                    document.body.removeChild(baselineDialog);
+                };
+            };
+            
+        });
+        
+        socket.on('baseline_adjusted', function(data) {
+            console.log(data.message);
+            alert(data.message); // 必要に応じてアラート表示
+        });
+        
+        
+        
+        
     </script>
 </body>
 </html>
