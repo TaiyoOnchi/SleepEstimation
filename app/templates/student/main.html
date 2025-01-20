@@ -213,7 +213,7 @@
             window.location.href = data.redirect_url;
         });
         
-        socket.on('low_eye_openness_warning', function() {
+        socket.on('low_eye_openness_warning', function(data) {
             const dialogContainer = document.createElement('div');
             dialogContainer.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50';
             
@@ -236,6 +236,13 @@
         
             document.getElementById('no-btn').onclick = function() {
                 document.body.removeChild(dialogContainer);
+                
+                // ここで attention_id を保存（仮に new_attention_id とします）
+                attention_id = data.attention_id;  // サーバーから受け取った attention_id を保存
+                socket.emit('response_low_eye_openness', { 
+                    response: 'no',
+                    attention_id: attention_id  // attention_id を送信
+                });
             
                 const baselineDialog = document.createElement('div');
                 baselineDialog.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50';

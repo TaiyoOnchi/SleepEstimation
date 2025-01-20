@@ -230,11 +230,15 @@ def monitor_eye_openness(data):  # 開眼率測定
                 INSERT INTO attentions (student_participation_id, timestamp)
                 VALUES (?, ?)
             ''', (participation_id, sleep_start_time[student_number]))
+            # 挿入したレコードの ID を取得
+            new_attention_id = cursor.lastrowid
 
             conn.commit()  # 変更を保存
             
             # 学生向け通知
             socketio.emit('attention_alert', {'message': '開眼率が連続して低下していたため、注意回数が記録されました。'}, room=student_number)
+            # low_eye_openness_warning に新しい attentions ID を渡す
+            socketio.emit('low_eye_openness_warning', {'attention_id': new_attention_id}, room=student_number)
             
             # 教員向け通知
             teacher_id = get_teacher_id_by_participation_id(participation_id)  # 関連する教員IDを取得する関数を実装
@@ -248,7 +252,6 @@ def monitor_eye_openness(data):  # 開眼率測定
                 
         # 三回連続で閾値以下の場合、通知を表示
         elif low_eye_openness_count[student_number] > 0 and low_eye_openness_count[student_number] % 3 == 0:
-            socketio.emit('low_eye_openness_warning', {}, room=student_number)
             socketio.emit('low_eye_openness_alert', {'message': '開眼率が低下しています！'}, room=student_number)
 
 
@@ -360,3 +363,24 @@ def adjust_baseline(data):
         socketio.emit('baseline_adjusted', {'message': '基準値を5%下げました。'}, room=student_number)
     else:
         socketio.emit('baseline_adjusted', {'message': '基準値の変更はキャンセルされました。'}, room=student_number)
+
+
+@socketio.on('response_low_eye_openness')
+def handle_low_eye_openness_response(data):
+    attention_id = data['attention_id']
+    response = data['response']
+
+    if response == 'no':
+        conn = current_app.get_db()
+        cursor = conn.cursor()
+
+        # is_correct カラムを FALSE に更新
+        cursor.execute('''
+            UPDATE attentions
+            SET is_correct = FALSE
+            WHERE id = ?
+        ''', (attention_id,))
+
+        conn.commit()
+
+        print(f"Attention ID {attention_id} marked as incorrect.")

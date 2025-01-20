@@ -534,7 +534,7 @@ def session_student_details(session_id, student_id):
 
     # attentions情報を取得
     cursor.execute('''
-        SELECT id, timestamp, sleep_time
+        SELECT *
         FROM attentions
         WHERE student_participation_id = (
             SELECT id
