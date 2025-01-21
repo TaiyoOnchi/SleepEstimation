@@ -85,7 +85,7 @@
                                     <td class="py-3 px-4">{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
                                     <td class="py-3 px-4">{{ student.seat_number }}</td>
                                     <td class="py-3 px-4">{{ student.attendance_time }}</td>
-                                    <td class="py-3 px-4">{{ student.attention_count }}</td>
+                                    <td class="py-3 px-4 attention-count">{{ student.attention_count }}</td>
                                     <td class="py-3 px-4">{{ student.warning_count }}</td>
                                     <td class="py-3 px-4">
                                         {% if not lecture_session.end_time %}
@@ -121,7 +121,7 @@
                             </thead>
                             <tbody class="text-gray-700">
                                 {% for student in student_participations %}
-                                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                <tr class="border-b border-gray-200 hover:bg-gray-50" data-student-number="{{ student.student_number }}">
                                     <td class="py-3 px-4">
                                         <a href="{{ url_for('app.teacher.lecture.session_student_details', session_id=lecture_session.id, student_id=student.id) }}" class="text-blue-600 hover:underline">
                                             {{ student.student_number }}
@@ -129,10 +129,10 @@
                                     </td>
                                     <td class="py-3 px-4">{{ student.last_name }} {{ student.first_name }}</td>
                                     <td class="py-3 px-4">{{ student.kana_last_name }} {{ student.kana_first_name }}</td>
-                                    <td class="py-3 px-4">{{ student.seat_number }}</td>
-                                    <td class="py-3 px-4">{{ student.attendance_time }}</td>
-                                    <td class="py-3 px-4">{{ student.attention_count }}</td>
-                                    <td class="py-3 px-4">{{ student.warning_count }}</td>
+                                    <td class="py-3 px-4">{{ student.seat_number or '未設定' }}</td>
+                                    <td class="py-3 px-4">{{ student.attendance_time or '不明' }}</td>
+                                    <td class="py-3 px-4 attention-count">{{ student.attention_count or 0 }}</td>
+                                    <td class="py-3 px-4">{{ student.warning_count or 0 }}</td>
                                     <td class="py-3 px-4">
                                         {% if not lecture_session.end_time %}
                                         <a href="{{ url_for('app.teacher.lecture.create_warning', student_id=student.id) }}" class="text-red-500 hover:text-red-700">
@@ -145,7 +145,6 @@
                                 </tr>
                                 {% endfor %}
                             </tbody>
-                        </table>
                     </div>
                 </div>
 
@@ -172,51 +171,67 @@
             // サーバーから lecture_session.id を渡す
             const sessionId = {{ lecture_session.id|tojson }};
             
-            socket.on('student_joined', function(data) {
-                const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
-                const newRow = table.insertRow();
-                
+            function createStudentRow(data) {
+                const newRow = document.createElement('tr');
+                newRow.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-50');
                 newRow.setAttribute('data-student-number', data.student_number);
-            
-                // 時刻を加工して秒を除去
-                function formatTimeWithoutSeconds(timeString) {
-                    const [hours, minutes] = timeString.split(':');
-                    return `${hours}:${minutes}`;
-                }
-            
-                const formattedAttendanceTime = formatTimeWithoutSeconds(data.attendance_time);
-            
-                // セルを作成し、クラスを付与
-                const studentNumberCell = newRow.insertCell(0);
+    
+                const studentNumberCell = document.createElement('td');
+                studentNumberCell.classList.add('py-3', 'px-4');
                 const studentLink = document.createElement('a');
                 studentLink.href = `/teacher/session/${sessionId}/student/${data.id}`;
                 studentLink.textContent = data.student_number;
                 studentLink.classList.add('text-blue-600', 'hover:underline');
                 studentNumberCell.appendChild(studentLink);
-            
-                newRow.insertCell(1).textContent = `${data.last_name} ${data.first_name}`;
-                newRow.insertCell(2).textContent = `${data.kana_last_name} ${data.kana_first_name}`;
-                newRow.insertCell(3).textContent = data.seat_number;
-            
-                // 加工した時刻を表示
-                newRow.insertCell(4).textContent = formattedAttendanceTime;
-            
-                const attentionCell = newRow.insertCell(5);
-                attentionCell.textContent = data.attention_count;
-                attentionCell.classList.add('attention-count');
-            
-                const warningCell = newRow.insertCell(6);
-                warningCell.textContent = data.warning_count;
-            
-                const actionCell = newRow.insertCell(7);
+                newRow.appendChild(studentNumberCell);
+    
+                const nameCell = document.createElement('td');
+                nameCell.classList.add('py-3', 'px-4');
+                nameCell.textContent = `${data.last_name} ${data.first_name}`;
+                newRow.appendChild(nameCell);
+    
+                const kanaCell = document.createElement('td');
+                kanaCell.classList.add('py-3', 'px-4');
+                kanaCell.textContent = `${data.kana_last_name} ${data.kana_first_name}`;
+                newRow.appendChild(kanaCell);
+    
+                const seatCell = document.createElement('td');
+                seatCell.classList.add('py-3', 'px-4');
+                seatCell.textContent = data.seat_number || '未設定';
+                newRow.appendChild(seatCell);
+    
+                const attendanceCell = document.createElement('td');
+                attendanceCell.classList.add('py-3', 'px-4');
+                attendanceCell.textContent = data.attendance_time || '不明';
+                newRow.appendChild(attendanceCell);
+    
+                const attentionCell = document.createElement('td');
+                attentionCell.classList.add('py-3', 'px-4', 'attention-count');
+                attentionCell.textContent = data.attention_count || 0;
+                newRow.appendChild(attentionCell);
+    
+                const warningCell = document.createElement('td');
+                warningCell.classList.add('py-3', 'px-4');
+                warningCell.textContent = data.warning_count || 0;
+                newRow.appendChild(warningCell);
+    
+                const actionCell = document.createElement('td');
+                actionCell.classList.add('py-3', 'px-4');
                 const warningLink = document.createElement('a');
                 warningLink.href = `/teacher/create_warning?student_id=${data.id}`;
-                warningLink.classList.add('text-red-500', 'hover:text-red-700');
                 warningLink.textContent = '警告を送信';
+                warningLink.classList.add('text-red-500', 'hover:text-red-700');
                 actionCell.appendChild(warningLink);
-            
-                // ソートを適用
-                sortTableByAttention();
+                newRow.appendChild(actionCell);
+    
+                return newRow;
+            }
+    
+            socket.on('student_joined', function(data) {
+                const tableBody = document.getElementById('participants').getElementsByTagName('tbody')[0];
+                const newRow = createStudentRow(data);
+                tableBody.appendChild(newRow);
+                sortTableByAttention(); // ソートを適用
             });
             
             
@@ -253,6 +268,63 @@
             
             const inactiveTable = document.getElementById('inactive-students').getElementsByTagName('tbody')[0];
 
+            function createInactiveStudentRow(data) {
+                const newRow = document.createElement('tr');
+                newRow.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-50');
+                newRow.setAttribute('data-student-number', data.student_number);
+            
+                const studentNumberCell = document.createElement('td');
+                studentNumberCell.classList.add('py-3', 'px-4');
+                const studentLink = document.createElement('a');
+                studentLink.href = `/teacher/session/${sessionId}/student/${data.id}`;
+                studentLink.textContent = data.student_number;
+                studentLink.classList.add('text-blue-600', 'hover:underline');
+                studentNumberCell.appendChild(studentLink);
+                newRow.appendChild(studentNumberCell);
+            
+                const nameCell = document.createElement('td');
+                nameCell.classList.add('py-3', 'px-4');
+                nameCell.textContent = `${data.last_name} ${data.first_name}`;
+                newRow.appendChild(nameCell);
+            
+                const kanaCell = document.createElement('td');
+                kanaCell.classList.add('py-3', 'px-4');
+                kanaCell.textContent = `${data.kana_last_name} ${data.kana_first_name}`;
+                newRow.appendChild(kanaCell);
+            
+                const seatCell = document.createElement('td');
+                seatCell.classList.add('py-3', 'px-4');
+                seatCell.textContent = data.seat_number || '未設定';
+                newRow.appendChild(seatCell);
+            
+                const attendanceCell = document.createElement('td');
+                attendanceCell.classList.add('py-3', 'px-4');
+                attendanceCell.textContent = data.attendance_time || '不明';
+                newRow.appendChild(attendanceCell);
+            
+                const attentionCell = document.createElement('td');
+                attentionCell.classList.add('py-3', 'px-4', 'attention-count');
+                attentionCell.textContent = data.attention_count || 0;
+                newRow.appendChild(attentionCell);
+            
+                const warningCell = document.createElement('td');
+                warningCell.classList.add('py-3', 'px-4');
+                warningCell.textContent = data.warning_count || 0;
+                newRow.appendChild(warningCell);
+            
+                const actionCell = document.createElement('td');
+                actionCell.classList.add('py-3', 'px-4');
+                const warningLink = document.createElement('a');
+                warningLink.href = `/teacher/create_warning?student_id=${data.id}`;
+                warningLink.textContent = '警告を送信';
+                warningLink.classList.add('text-red-500', 'hover:text-red-700');
+                actionCell.appendChild(warningLink);
+                newRow.appendChild(actionCell);
+            
+                return newRow;
+            }
+            
+        
             // 30秒ごとに開眼率未検出学生をチェック
             setInterval(() => {
                 fetch(`/teacher/lecture/check_eye_openness?session_id=${sessionId}`)
@@ -260,44 +332,15 @@
                     .then(data => {
                         // テーブルをクリア
                         inactiveTable.innerHTML = '';
-
+        
+                        // 新しい行を追加
                         data.inactive_students.forEach(student => {
-                            const newRow = inactiveTable.insertRow();
-                        
-                            const numberCell = newRow.insertCell(0);
-                            const nameCell = newRow.insertCell(1);
-                            const kanaCell = newRow.insertCell(2);
-                            const seatCell = newRow.insertCell(3);
-                            const attendanceCell = newRow.insertCell(4);
-                            const attentionCell = newRow.insertCell(5);
-                            const warningCell = newRow.insertCell(6);
-                            const actionCellInactive = newRow.insertCell(7); // ここで変数名を変更
-                        
-                            // 学籍番号セルにリンクを追加
-                            const link = document.createElement('a');
-                            link.href = `/student/detail/${student.student_number}`;
-                            link.textContent = student.student_number;
-                            link.style.color = 'blue';
-                            link.style.textDecoration = 'underline';
-                            numberCell.appendChild(link);
-                        
-                            kanaCell.textContent = `${student.kana_last_name} ${student.kana_first_name}`;
-                            nameCell.textContent = `${student.last_name} ${student.first_name}`;
-                            seatCell.textContent = student.seat_number || '未設定';
-                            attendanceCell.textContent = student.attendance_time || '不明';
-                            attentionCell.textContent = student.attention_count || 0;
-                            warningCell.textContent = student.warning_count || 0;
-                        
-                            // ボタン追加
-                            const warningButton = document.createElement('a');
-                            warningButton.href = `/teacher/create_warning?student_id=${student.id}`;
-                            warningButton.textContent = '警告を送信';
-                            warningButton.classList.add('text-red-500', 'hover:text-red-700');
-                            actionCellInactive.appendChild(warningButton);
+                            const newRow = createInactiveStudentRow(student);
+                            inactiveTable.appendChild(newRow);
                         });
-                        
-                        
 
+                        // ソート機能を適用
+                        sortTableByAttention(); // inactiveTable に対応するソートを実行
                     })
                     .catch(error => {
                         console.error('Error fetching inactive students:', error);
@@ -305,7 +348,7 @@
             }, 30000); // 30秒間隔
 
         });
-        
+    
 
 
         function confirmEndSession() {
