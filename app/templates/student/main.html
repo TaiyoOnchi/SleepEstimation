@@ -74,10 +74,12 @@
 
         </div>
 
-        <!-- ビデオ表示エリア -->
+                                        
+        
         <div id="video-container" class="border-8 border-gray-300 rounded-lg mb-4">
-            <video id="video" autoplay muted class="w-full rounded-lg shadow-md"></video>
+            <img id="processedImage" class="w-full rounded-lg shadow-md" alt="Processed Image">
         </div>
+        
     </div>
 
 
@@ -98,17 +100,30 @@
 
         const socket = io();
         socket.emit('student_join_room');
-        const video = document.getElementById('video');
-
-        // カメラを起動して映像を表示
+        
         navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(error => {
-                alert('カメラにアクセスできません。ブラウザの設定でカメラアクセスを許可してください。');
-                console.error("カメラの使用を許可してください。", error);
-            });
+        .then(stream => {
+            const video = document.createElement('video'); // 非表示のビデオ要素を作成
+            video.srcObject = stream;
+            video.play();
+
+            // 2秒ごとに処理された画像を送信
+            setInterval(() => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // 画像データを取得してサーバーに送信
+                const imageData = canvas.toDataURL('image/jpeg');
+                socket.emit('monitor_eye_openness', { imageData, student_participation_id });
+            }, 2000);
+        })
+        .catch(error => {
+            alert('カメラにアクセスできません。ブラウザの設定でカメラアクセスを許可してください。');
+            console.error("カメラの使用を許可してください。", error);
+        });
         
         const student_participation_id = "{{ student_participation_id }}";
 
@@ -148,18 +163,18 @@
         
 
         socket.on('eye_openness_update', function(data) {
-            const avgEyeOpenness = data.avgEyeOpenness;
+            const maxEyeOpenness = data.maxEyeOpenness;
             const eroThreshold = data.eroThreshold;
             const warningThreshold = ((100 - eroThreshold) / 2) + eroThreshold;
         
             const videoContainer = document.getElementById('video-container');
         
-            if (avgEyeOpenness === null || avgEyeOpenness === undefined) {
+            if (maxEyeOpenness === null || maxEyeOpenness === undefined) {
                 // 開眼率が測定されていない場合、枠を灰色に設定
                 videoContainer.className = 'border-8 border-gray-300 rounded-lg mb-4';
-            } else if (avgEyeOpenness >= warningThreshold) {
+            } else if (maxEyeOpenness >= warningThreshold) {
                 videoContainer.className = 'border-8 border-green-500 rounded-lg mb-4';
-            } else if (avgEyeOpenness >= eroThreshold) {
+            } else if (maxEyeOpenness >= eroThreshold) {
                 videoContainer.className = 'border-8 border-yellow-500 rounded-lg mb-4';
             } else {
                 videoContainer.className = 'border-8 border-red-500 rounded-lg mb-4';
@@ -277,7 +292,12 @@
             alert(data.message); // 必要に応じてアラート表示
         });
         
-        
+        // サーバーからの画像データを受信して <img> タグに表示
+        socket.on('processed_frame', (data) => {
+            const imgElement = document.getElementById('processedImage');
+            imgElement.src = `data:image/jpeg;base64,${data.image}`;
+        });
+
         
         
     </script>

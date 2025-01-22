@@ -5,6 +5,8 @@ from app.eye_openness import decode_image, process_image, save_eye_openness
 from flask_socketio import join_room, leave_room  # join_room をインポート
 from app.utils import student_required, teacher_required
 from datetime import datetime
+import base64
+import cv2 as cv
 
 
 
@@ -129,6 +131,16 @@ def monitor_eye_openness(data):  # 開眼率測定
             }, room=student_number)
         
         return
+    
+    # フレーム処理
+    processed_frame, eye_openness = process_image(frame)
+
+    # フレームをJPEGにエンコード
+    _, buffer = cv.imencode('.jpg', processed_frame)
+    frame_base64 = base64.b64encode(buffer).decode('utf-8')
+
+    # クライアントに送信
+    socketio.emit('processed_frame', {'image': frame_base64})
 
     # デコード成功時はカウントをリセット
     decode_fail_count[student_number] = 0
@@ -172,14 +184,14 @@ def monitor_eye_openness(data):  # 開眼率測定
         save_eye_openness(conn, participation_id, eye_right_rounded, eye_left_rounded)
 
         # 両目の平均開眼率を計算
-        avg_eye_openness = (right_eye_ratio + left_eye_ratio) / 2
+        max_eye_openness = max(right_eye_ratio, left_eye_ratio)
         socketio.emit('eye_openness_update', {
-            'avgEyeOpenness': avg_eye_openness,
+            'maxEyeOpenness': max_eye_openness,
             'eroThreshold': ero_threshold
         }, room=student_number)
 
         
-        if avg_eye_openness < ero_threshold: # 現在の開眼率が閾値未満の場合、リストに追加
+        if max_eye_openness < ero_threshold: # 現在の開眼率が閾値未満の場合、リストに追加
             low_eye_openness_count[student_number] += 1
             
         

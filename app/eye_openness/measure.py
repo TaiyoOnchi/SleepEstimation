@@ -35,14 +35,70 @@ def process_image(frame):
         #     # eye_openness.items() → 目の開眼率が格納されている辞書からキー（'eye_right'、'eye_left'）と値（目の開眼率）を取得
         #     for eye, openness in eye_openness.items()  # eye → 'eye_right' , 'eye_left'、openness → 開眼率(0.2など)
         # }
-
+        # 目のランドマークを描画
+        draw_eye_features(frame, landmarks)
+        
         return frame, eye_openness
     else:
         # 顔が検出されなかった場合
         return frame, None
 
+def draw_eye_features(frame, landmarks):
+    for eye in ['eye_right', 'eye_left']:
+        if eye == 'eye_right':
+            head_idx, tail_idx = 263, 362  # 右目の目頭と目じり
+            upper_indices = [398, 384, 385, 386, 387, 388, 466]
+            lower_indices = [249, 390, 373, 374, 380, 381, 382]
+        else:
+            head_idx, tail_idx = 33, 133  # 左目の目頭と目じり
+            upper_indices = [173, 157, 158, 159, 160, 161, 246]
+            lower_indices = [7, 163, 144, 145, 153, 154, 155]
+
+        # 目頭と目じりの座標
+        eye_head = np.array([landmarks[head_idx].x * frame.shape[1], landmarks[head_idx].y * frame.shape[0]])
+        eye_tail = np.array([landmarks[tail_idx].x * frame.shape[1], landmarks[tail_idx].y * frame.shape[0]])
+        
+        # 目頭と目じりを結ぶ直線を描画
+        cv.line(frame, tuple(eye_head.astype(int)), tuple(eye_tail.astype(int)), (0, 255, 0), 2)
+
+        # 上まぶたの最遠点を描画
+        max_upper_distance = 0
+        upper_point = None
+        for idx in upper_indices:
+            lid_point = np.array([landmarks[idx].x * frame.shape[1], landmarks[idx].y * frame.shape[0]])
+            perpendicular_point = calculate_perpendicular_point(eye_head, eye_tail, lid_point)
+            distance = np.linalg.norm(lid_point - perpendicular_point)
+            if distance > max_upper_distance:
+                max_upper_distance = distance
+                upper_point = lid_point
+
+        if upper_point is not None:
+            cv.circle(frame, tuple(upper_point.astype(int)), 5, (255, 0, 0), -1)  # 青丸で上まぶた描画
+
+        # 下まぶたの最遠点を描画
+        max_lower_distance = 0
+        lower_point = None
+        for idx in lower_indices:
+            lid_point = np.array([landmarks[idx].x * frame.shape[1], landmarks[idx].y * frame.shape[0]])
+            perpendicular_point = calculate_perpendicular_point(eye_head, eye_tail, lid_point)
+            distance = np.linalg.norm(lid_point - perpendicular_point)
+            if distance > max_lower_distance:
+                max_lower_distance = distance
+                lower_point = lid_point
+
+        if lower_point is not None:
+            cv.circle(frame, tuple(lower_point.astype(int)), 5, (0, 0, 255), -1)  # 赤丸で下まぶた描画
 
 
+        # 上下の垂線を描画
+        if upper_point is not None:
+            perpendicular_point_upper = calculate_perpendicular_point(eye_head, eye_tail, upper_point)
+            cv.line(frame, tuple(upper_point.astype(int)), tuple(perpendicular_point_upper.astype(int)), 
+                    (0, 255, 255), 2)
+        if lower_point is not None:
+            perpendicular_point_lower = calculate_perpendicular_point(eye_head, eye_tail, lower_point)
+            cv.line(frame, tuple(lower_point.astype(int)), tuple(perpendicular_point_lower.astype(int)), 
+                    (255, 255, 0), 2)
 
 
 def calculate_nose_length(landmarks, img):
