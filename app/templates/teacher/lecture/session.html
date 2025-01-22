@@ -240,6 +240,7 @@
             
 
             socket.on('attention_updated', function(data) {
+                console.log('Received attention_updated event:', data);
                 const table = document.getElementById('participants').getElementsByTagName('tbody')[0];
                 for (let row of table.rows) {
                     if (row.dataset.studentNumber === data.student_number) {

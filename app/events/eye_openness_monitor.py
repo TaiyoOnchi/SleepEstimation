@@ -79,7 +79,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         
         
         # 注意回数記録通知（10回連続で失敗）
-        if decode_fail_count[student_number] == 10 and student_number not in sleep_start_time:
+        if decode_fail_count[student_number] == 16 and student_number not in sleep_start_time:
             conn = current_app.get_db()
             cursor = conn.cursor()
             cursor.execute('''
@@ -103,9 +103,9 @@ def monitor_eye_openness(data):  # 開眼率測定
             
             # attentions テーブルに新しいレコードを挿入
             cursor.execute('''
-                INSERT INTO attentions (student_participation_id, timestamp)
-                VALUES (?, ?)
-            ''', (participation_id, sleep_start_time[student_number]))
+                INSERT INTO attentions (student_participation_id, timestamp, reason)
+                VALUES (?, ?, ?)
+            ''', (participation_id, sleep_start_time[student_number],2))
             conn.commit()
             
             # 学生向け通知
@@ -123,7 +123,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 }, room=teacher_room)
                 
         # カメラアクセス失敗通知（5回連続で失敗）
-        elif decode_fail_count[student_number] > 0 and decode_fail_count[student_number] % 5 == 0:
+        elif decode_fail_count[student_number] > 0 and decode_fail_count[student_number] % 8 == 0:
             socketio.emit('low_eye_openness_alert', {
                 'message': 'カメラにアクセスできません。\nブラウザの設定でカメラアクセスを許可してください。'
             }, room=student_number)
@@ -204,7 +204,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 low_eye_openness_count[student_number] = 0  # カウンターをリセット
                 
             
-        if low_eye_openness_count[student_number] == 6 and student_number not in sleep_start_time:
+        if low_eye_openness_count[student_number] == 16 and student_number not in sleep_start_time:
             # 注意回数が記録された際の処理
             cursor.execute('''
                 UPDATE student_subjects
@@ -227,9 +227,9 @@ def monitor_eye_openness(data):  # 開眼率測定
             
             # attentions テーブルに新しいレコードを挿入
             cursor.execute('''
-                INSERT INTO attentions (student_participation_id, timestamp)
-                VALUES (?, ?)
-            ''', (participation_id, sleep_start_time[student_number]))
+                INSERT INTO attentions (student_participation_id, timestamp, reason)
+                VALUES (?, ?, ?)
+            ''', (participation_id, sleep_start_time[student_number],0))
             # 挿入したレコードの ID を取得
             new_attention_id = cursor.lastrowid
 
@@ -251,7 +251,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 }, room=teacher_room)
                 
         # 三回連続で閾値以下の場合、通知を表示
-        elif low_eye_openness_count[student_number] > 0 and low_eye_openness_count[student_number] % 3 == 0:
+        elif low_eye_openness_count[student_number] > 0 and low_eye_openness_count[student_number] % 8 == 0:
             socketio.emit('low_eye_openness_alert', {'message': '開眼率が低下しています！'}, room=student_number)
 
 
@@ -267,7 +267,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         }, room=student_number)
 
         # 開眼率取得失敗が10回連続の場合、通知を送信
-        if failed_eye_openness_count[student_number] == 10 and student_number not in sleep_start_time:
+        if failed_eye_openness_count[student_number] ==32 and student_number not in sleep_start_time:
             
             # 注意回数が記録された際の処理
             cursor.execute('''
@@ -291,14 +291,14 @@ def monitor_eye_openness(data):  # 開眼率測定
             
             # attentions テーブルに新しいレコードを挿入
             cursor.execute('''
-                INSERT INTO attentions (student_participation_id, timestamp)
-                VALUES (?, ?)
-            ''', (participation_id, sleep_start_time[student_number]))
+                INSERT INTO attentions (student_participation_id, timestamp, reason)
+                VALUES (?, ?, ?)
+            ''', (participation_id, sleep_start_time[student_number],1))
 
             conn.commit()  # 変更を保存
             
             # 学生向け通知
-            socketio.emit('attention_alert', {'message': '開眼率が検出できなかったため、注意回数が記録されました'}, room=student_number)            
+            socketio.emit('attention_alert', {'message': '目が検出できなかったため、注意回数が記録されました'}, room=student_number)            
             
             # 教員向け通知
             teacher_id = get_teacher_id_by_participation_id(participation_id)  # 関連する教員IDを取得する関数を実装
@@ -310,7 +310,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 }, room=teacher_room)
                 
         # 開眼率取得失敗が5回連続の場合、通知を送信
-        elif failed_eye_openness_count[student_number] > 0 and failed_eye_openness_count[student_number] % 5 == 0:
+        elif failed_eye_openness_count[student_number] > 0 and failed_eye_openness_count[student_number] % 16 == 0:
             socketio.emit('low_eye_openness_alert', {'message': '開眼率の検出に失敗しています。\nカメラの状態を確認してください。'}, room=student_number)
 
 

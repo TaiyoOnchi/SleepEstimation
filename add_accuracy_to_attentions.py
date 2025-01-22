@@ -31,49 +31,52 @@ if __name__ == "__main__":
     add_column_to_attentions()
 
 
-# def update_attentions_table():
-#     conn = sqlite3.connect('users.db')
-#     cursor = conn.cursor()
+import sqlite3
 
-#     # ステップ 1: 現在のデータをバックアップ
-#     cursor.execute('''
-#         CREATE TABLE IF NOT EXISTS attentions_backup AS
-#         SELECT * FROM attentions
-#     ''')
-#     print("バックアップテーブル 'attentions_backup' を作成しました。")
+def update_attentions_table():
+    conn = sqlite3.connect('users.db')
+    cursor = conn.cursor()
 
-#     # ステップ 2: 元のテーブルを削除
-#     cursor.execute('DROP TABLE attentions')
-#     print("元のテーブル 'attentions' を削除しました。")
+    # 1: 現在のデータをバックアップ
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS attentions_backup AS
+        SELECT * FROM attentions
+    ''')
+    print("バックアップテーブル 'attentions_backup' を作成しました。")
 
-#     # ステップ 3: 新しい構成でテーブルを作成
-#     cursor.execute('''
-#         CREATE TABLE attentions (
-#             id INTEGER PRIMARY KEY AUTOINCREMENT,
-#             student_participation_id INTEGER NOT NULL,
-#             timestamp DATETIME NOT NULL,
-#             sleep_time TIME DEFAULT '00:00:00' NOT NULL,
-#             is_correct BOOLEAN DEFAULT TRUE NOT NULL,
-#             FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
-#         )
-#     ''')
-#     print("新しい構成で 'attentions' テーブルを作成しました。")
+    # 2: 元のテーブルを削除
+    cursor.execute('DROP TABLE attentions')
+    print("元のテーブル 'attentions' を削除しました。")
 
-#     # ステップ 4: データをバックアップから移行
-#     cursor.execute('''
-#         INSERT INTO attentions (id, student_participation_id, timestamp, sleep_time, is_correct)
-#         SELECT id, student_participation_id, timestamp, sleep_time, COALESCE(is_correct, TRUE)
-#         FROM attentions_backup
-#     ''')
-#     print("データをバックアップテーブルから新しいテーブルに移行しました。")
+    # 3: 新しい構成でテーブルを作成
+    cursor.execute('''
+        CREATE TABLE attentions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_participation_id INTEGER NOT NULL,
+            timestamp DATETIME NOT NULL,
+            sleep_time TIME NOT NULL DEFAULT '00:00:00',
+            is_correct BOOLEAN NOT NULL DEFAULT TRUE,
+            reason INTEGER NOT NULL DEFAULT 0 CHECK(reason IN (0, 1, 2)),
+            FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
+        )
+    ''')
+    print("新しい構成で 'attentions' テーブルを作成しました。")
 
-#     # バックアップテーブルを削除（必要に応じて）
-#     cursor.execute('DROP TABLE attentions_backup')
-#     print("バックアップテーブル 'attentions_backup' を削除しました。")
+    # 4: データをバックアップから移行
+    cursor.execute('''
+        INSERT INTO attentions (id, student_participation_id, timestamp, sleep_time, is_correct, reason)
+        SELECT id, student_participation_id, timestamp, sleep_time, COALESCE(is_correct, TRUE), 0
+        FROM attentions_backup
+    ''')
+    print("データをバックアップテーブルから新しいテーブルに移行しました。")
 
-#     conn.commit()
-#     conn.close()
-#     print("テーブル構造の更新が完了しました。")
+    # バックアップテーブルを削除（必要に応じて）
+    cursor.execute('DROP TABLE attentions_backup')
+    print("バックアップテーブル 'attentions_backup' を削除しました。")
 
-# if __name__ == "__main__":
-#     update_attentions_table()
+    conn.commit()
+    conn.close()
+    print("テーブル構造の更新が完了しました。")
+
+if __name__ == "__main__":
+    update_attentions_table()

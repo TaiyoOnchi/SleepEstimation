@@ -83,7 +83,8 @@
                                 <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
                                     <th class="py-3 px-4 text-left">タイムスタンプ</th>
                                     <th class="py-3 px-4 text-left">睡眠時間</th>
-                                    <th class="py-3 px-4 text-left">正誤</th>  <!-- 新しい列を追加 -->
+                                    <th class="py-3 px-4 text-left">正誤</th>
+                                    <th class="py-3 px-4 text-left">理由</th> <!-- 新しい列を追加 -->
                                 </tr>
                             </thead>
                             <tbody class="text-gray-700">
@@ -98,6 +99,17 @@
                                             <span class="text-red-500">✕</span>  <!-- 誤検出の場合 -->
                                         {% endif %}
                                     </td>
+                                    <td class="py-3 px-4">
+                                        {% if attention.reason == 0 %}
+                                            開眼率が連続して低下していたため
+                                        {% elif attention.reason == 1 %}
+                                            目が検出できなかったため
+                                        {% elif attention.reason == 2 %}
+                                            カメラが検出できなかったため
+                                        {% else %}
+                                            不明
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -107,6 +119,7 @@
                     <p class="text-gray-600">注意履歴はありません。</p>
                 {% endif %}
             </div>
+
             
 
             <!-- 警告情報 -->
