@@ -75,7 +75,7 @@
         </div>
 
                                         
-        
+        <div id="eye-openness-display" class="text-center text-gray-500 font-medium mb-2"></div>
         <div id="video-container" class="border-8 border-gray-300 rounded-lg mb-4">
             <img id="processedImage" class="w-full rounded-lg shadow-md" alt="Processed Image">
         </div>
@@ -168,16 +168,25 @@
             const warningThreshold = ((100 - eroThreshold) / 2) + eroThreshold;
         
             const videoContainer = document.getElementById('video-container');
+            const eyeOpennessDisplay = document.getElementById('eye-openness-display');
         
             if (maxEyeOpenness === null || maxEyeOpenness === undefined) {
-                // 開眼率が測定されていない場合、枠を灰色に設定
+                // 開眼率が測定されていない場合
                 videoContainer.className = 'border-8 border-gray-300 rounded-lg mb-4';
+                eyeOpennessDisplay.textContent = '測定不能';
+                eyeOpennessDisplay.className = 'text-center text-gray-500 font-medium mb-2';
             } else if (maxEyeOpenness >= warningThreshold) {
                 videoContainer.className = 'border-8 border-green-500 rounded-lg mb-4';
+                eyeOpennessDisplay.textContent = `開眼率: ${maxEyeOpenness.toFixed(2)}%`;
+                eyeOpennessDisplay.className = 'text-center text-green-500 font-medium mb-2';
             } else if (maxEyeOpenness >= eroThreshold) {
                 videoContainer.className = 'border-8 border-yellow-500 rounded-lg mb-4';
+                eyeOpennessDisplay.textContent = `開眼率: ${maxEyeOpenness.toFixed(2)}%`;
+                eyeOpennessDisplay.className = 'text-center text-yellow-500 font-medium mb-2';
             } else {
                 videoContainer.className = 'border-8 border-red-500 rounded-lg mb-4';
+                eyeOpennessDisplay.textContent = `開眼率: ${maxEyeOpenness.toFixed(2)}%`;
+                eyeOpennessDisplay.className = 'text-center text-red-500 font-medium mb-2';
             }
         });
         
