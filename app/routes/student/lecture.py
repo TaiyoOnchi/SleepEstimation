@@ -35,6 +35,7 @@ def register():
     # 履修済みの講義を取得
     cursor.execute('''
         SELECT 
+            s.id,
             s.subject_name, 
             s.default_classroom, 
             s.default_day_of_week, 
@@ -349,7 +350,8 @@ def show(participation_id):
         subject_name=subject_name,  # subject_name をテンプレートに渡す
         lecture_number=lecture_number,  # 講義回数をテンプレートに渡す
         attentions=attentions,
-        warnings=warnings
+        warnings=warnings,
+        subject_id=subject_id
     )
 
 
@@ -373,3 +375,50 @@ def format_times(data, key):
             ),
         })
     return formatted
+
+
+@lecture_bp.route('/lecture/subject_counts/<int:subject_id>')
+@student_required
+def subject_counts(subject_id):
+    conn = current_app.get_db()
+    cursor = conn.cursor()
+    
+    # subjectを取得
+    cursor.execute('''
+        SELECT *
+        FROM subjects
+        WHERE id = ?
+    ''', (subject_id,))
+    subject = cursor.fetchone()  # 1件だけ取得
+    
+    # データを辞書形式に変換
+    if subject:
+        subject = dict(zip([column[0] for column in cursor.description], subject))
+    
+    # 該当する subject_id のすべての subject_counts を取得
+    cursor.execute('''
+        SELECT id, start_time, end_time
+        FROM subject_counts
+        WHERE subject_id = ?
+        ORDER BY start_time ASC
+    ''', (subject_id,))
+    lectures = cursor.fetchall()
+
+
+    # タプルを辞書形式に変換
+    lectures = [dict(zip([column[0] for column in cursor.description], row)) for row in lectures]
+
+    # 時刻をフォーマット
+    lectures = format_times(lectures, 'start_time')
+    lectures = format_times(lectures, 'end_time')
+
+    # student_participations を辞書形式で attention_count と warning_count を含むように修正
+    cursor.execute('''
+        SELECT sp.subject_count_id, sp.id, sp.attention_count, sp.warning_count
+        FROM student_participations sp
+        JOIN student_subjects ss ON sp.student_subject_id = ss.id
+        WHERE ss.student_id = ? AND ss.subject_id = ?
+    ''', (current_user.id, subject_id))
+    participations = {row[0]: {'id': row[1], 'attention_count': row[2], 'warning_count': row[3]} for row in cursor.fetchall()}
+
+    return render_template('student/lecture/subject_counts.html', subject=subject, lectures=lectures, participations=participations)

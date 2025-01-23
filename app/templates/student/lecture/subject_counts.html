@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>講義一覧</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- ヘッダー -->
+    {% include 'partials/header.html' %}
+
+    <div class="container mx-auto px-4 py-12">
+        <div class="bg-white rounded-lg shadow-md p-6 max-w-5xl w-full mx-auto">
+
+            <h1 class="text-2xl font-bold text-gray-800 mb-2 flex justify-between">
+                    {{ subject['subject_name'] }}
+                <div class="flex">
+                    <span class="text-sm text-gray-500 ml-2 mr-2">
+                        教室:{{ subject['default_classroom'] }}  
+                    </span>
+                    <span class="text-sm text-gray-500 ml-2 mr-2">
+                        曜日:{{ subject['default_day_of_week'] }}  
+                    </span>
+                    <span class="text-sm text-gray-500 ml-2 mr-2">
+                        時限:{{ subject['default_period'] }}限目  
+                    </span>
+                </div>
+            </h1>
+            
+            
+
+            <table class="table-auto min-w-full border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border border-gray-300 px-6 py-3">講義回</th>
+                        <th class="border border-gray-300 px-6 py-3">開始時刻</th>
+                        <th class="border border-gray-300 px-6 py-3">終了時刻</th>
+                        <th class="border border-gray-300 px-6 py-3">注意回数</th>
+                        <th class="border border-gray-300 px-6 py-3">警告回数</th>
+                        <th class="border border-gray-300 px-6 py-3">アクション</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lecture in lectures %}
+                        <tr>
+                            <tr>
+                                <td class="border border-gray-300 px-6 py-3 text-center">{{ loop.index }}</td>
+                                <td class="border border-gray-300 px-6 py-3 text-center">{{ lecture['start_time'] }}</td>
+                                <td class="border border-gray-300 px-6 py-3 text-center">{{ lecture['end_time'] }}</td>
+                                <td class="border border-gray-300 px-6 py-3 text-center">
+                                    {% if lecture['id'] in participations %}
+                                        {{ participations[lecture['id']]['attention_count'] }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="border border-gray-300 px-6 py-3 text-center">
+                                    {% if lecture['id'] in participations %}
+                                        {{ participations[lecture['id']]['warning_count'] }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="border border-gray-300 px-6 py-3 text-center">
+                                    {% if lecture['id'] in participations %}
+                                        <a href="{{ url_for('app.student.lecture.show', participation_id=participations[lecture['id']]['id']) }}" 
+                                           class="text-blue-600 hover:underline">詳細を見る</a>
+                                    {% else %}
+                                        <span class="text-gray-500">参加記録なし</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                
+            </table>
+
+            <div class="container mx-auto px-4 mb-8 max-w-4xl text-center">
+                <a href="{{ url_for('app.student.lecture.register') }}" 
+                   class="text-gray-600 hover:text-blue-600 transition-colors">
+                    履修科目一覧へ戻る
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

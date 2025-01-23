@@ -37,7 +37,12 @@
                 <tbody>
                     {% for subject in registered_subjects %}
                         <tr>
-                            <td class="border border-gray-300 px-6 py-3">{{ subject['subject_name'] }}</td>
+                            <td class="border border-gray-300 px-6 py-3">
+                                <a href="{{ url_for('app.student.lecture.subject_counts', subject_id=subject['id']) }}" 
+                                   class="text-blue-600 hover:underline">
+                                   {{ subject['subject_name'] }}
+                                </a>
+                            </td>                            
                             <td class="border border-gray-300 px-6 py-3">{{ subject['default_classroom'] }}</td>
                             <td class="border border-gray-300 px-6 py-3">{{ subject['default_day_of_week'] }}</td>
                             <td class="border border-gray-300 px-6 py-3">{{ subject['default_period'] }}</td>
