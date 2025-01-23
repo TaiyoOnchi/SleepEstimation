@@ -81,7 +81,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         
         
         # 注意回数記録通知（10回連続で失敗）
-        if decode_fail_count[student_number] == 36 and student_number not in sleep_start_time:
+        if decode_fail_count[student_number] == 45 and student_number not in sleep_start_time:
             conn = current_app.get_db()
             cursor = conn.cursor()
             cursor.execute('''
@@ -125,7 +125,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 }, room=teacher_room)
                 
         # カメラアクセス失敗通知（5回連続で失敗）
-        elif decode_fail_count[student_number] > 0 and decode_fail_count[student_number] % 12 == 0:
+        elif decode_fail_count[student_number] > 0 and decode_fail_count[student_number] % 15 == 0:
             socketio.emit('low_eye_openness_alert', {
                 'message': 'カメラにアクセスできません。\nブラウザの設定でカメラアクセスを許可してください。'
             }, room=student_number)
@@ -279,7 +279,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         }, room=student_number)
 
         # 開眼率取得失敗が10回連続の場合、通知を送信
-        if failed_eye_openness_count[student_number] ==36 and student_number not in sleep_start_time:
+        if failed_eye_openness_count[student_number] ==45 and student_number not in sleep_start_time:
             
             # 注意回数が記録された際の処理
             cursor.execute('''
@@ -322,7 +322,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 }, room=teacher_room)
                 
         # 開眼率取得失敗が5回連続の場合、通知を送信
-        elif failed_eye_openness_count[student_number] > 0 and failed_eye_openness_count[student_number] % 12 == 0:
+        elif failed_eye_openness_count[student_number] > 0 and failed_eye_openness_count[student_number] % 15 == 0:
             socketio.emit('low_eye_openness_alert', {'message': '開眼率の検出に失敗しています。\nカメラの状態を確認してください。'}, room=student_number)
 
 
