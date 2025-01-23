@@ -140,7 +140,7 @@ def monitor_eye_openness(data):  # 開眼率測定
     frame_base64 = base64.b64encode(buffer).decode('utf-8')
 
     # クライアントに送信
-    socketio.emit('processed_frame', {'image': frame_base64})
+    socketio.emit('processed_frame', {'image': frame_base64},room=student_number)
 
     # デコード成功時はカウントをリセット
     decode_fail_count[student_number] = 0
