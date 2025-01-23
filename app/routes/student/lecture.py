@@ -109,13 +109,8 @@ def join():
     ''', (current_user.id,))
     active_lectures = cursor.fetchall()
     
-    
-    formatted_active_lectures = []
-    for lecture in active_lectures:
-        formatted_active_lectures.append({
-            **lecture,
-            'start_time': datetime.strptime(lecture['start_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if lecture['start_time'] else None,
-        })
+    active_lectures = format_times(active_lectures, 'start_time')
+
 
     # 開講中の講義がない場合はダッシュボードにリダイレクト
     if not active_lectures:
@@ -175,13 +170,15 @@ def join():
             cursor.execute("""
                 SELECT students.id, students.student_number, students.last_name, students.first_name,
                     students.kana_last_name, students.kana_first_name,
-                    student_participations.attendance_time, student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
+                    strftime('%Y-%m-%d %H:%M', student_participations.attendance_time) AS attendance_time, 
+                    student_participations.attention_count, student_participations.warning_count, student_participations.seat_number
                 FROM student_participations
                 JOIN student_subjects ON student_participations.student_subject_id = student_subjects.id
                 JOIN students ON student_subjects.student_id = students.id
                 WHERE student_participations.subject_count_id = ? AND student_subjects.student_id = ?
             """, (session_id, current_user.id))
             student_data = cursor.fetchone()
+
 
 
             cursor.execute('''
@@ -217,7 +214,7 @@ def join():
         else:
             flash("無効な参加コードです。", "error")
 
-    return render_template('student/lecture/join.html', active_lectures=formatted_active_lectures)
+    return render_template('student/lecture/join.html', active_lectures=active_lectures)
 
 
 

@@ -10,7 +10,7 @@
     {% include 'partials/header.html' %}<!-- ヘッダーを読み込み -->
     {% include 'partials/flash_messages.html' %}
     <div class="container mx-auto px-4 py-12 flex justify-center">
-        <div class="bg-white rounded-lg shadow-md p-6 max-w-xl w-full">
+        <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl w-full">
             <h1 class="text-2xl font-bold text-gray-800 mb-6">講義に参加</h1>
             
             <!-- ドロップダウンメニュー -->
@@ -27,7 +27,7 @@
                     {% for lecture in active_lectures %}
                     <li class="px-4 py-2 hover:bg-blue-100 cursor-pointer lecture-item" 
                         data-session-id="{{ lecture.session_id }}">
-                        【{{ lecture.subject_name }}】 教室：{{ lecture.classroom }},　曜日：{{ lecture.day_of_week }},　時限：{{ lecture.period }}
+                        【{{ lecture.subject_name }}】 教室：{{ lecture.classroom }},　曜日：{{ lecture.day_of_week }},　時限：{{ lecture.period }},　開始時刻：{{ lecture.start_time }}
                     </li>
                     {% endfor %}
                 </ul>
