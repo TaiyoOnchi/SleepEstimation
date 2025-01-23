@@ -236,3 +236,140 @@ def warnings(participation_id):
     warnings_list = cursor.fetchall()
 
     return render_template('student/lecture/warnings.html', warnings=warnings_list)
+
+
+@lecture_bp.route('/lecture/show/<int:participation_id>')
+@student_required
+def show(participation_id):
+    conn = current_app.get_db()
+    cursor = conn.cursor()
+
+    # 学生が参加中の講義情報を取得
+    cursor.execute('''
+        SELECT sp.id, sc.classroom, sc.day_of_week, sc.period, sc.start_time, sc.end_time, sc.subject_id, sc.id AS subject_count_id, sp.seat_number
+        FROM student_participations sp
+        JOIN subject_counts sc ON sp.subject_count_id = sc.id
+        WHERE sp.id = ?
+    ''', (participation_id,))
+    lecture_info = cursor.fetchone()
+
+    if lecture_info:
+        # 日時の変換処理（start_time をフォーマット）
+        start_time = datetime.strptime(lecture_info[4], '%Y-%m-%d %H:%M:%S.%f')  # データベースのフォーマットに応じて調整
+        formatted_start_time = start_time.strftime('%Y-%m-%d %H:%M')
+        end_time = datetime.strptime(lecture_info[5], '%Y-%m-%d %H:%M:%S.%f')  # データベースのフォーマットに応じて調整
+        formatted_end_time = end_time.strftime('%Y-%m-%d %H:%M')
+
+        current_lecture = {
+            "classroom": lecture_info[1],
+            "day_of_week": lecture_info[2],
+            "period": lecture_info[3],
+            "start_time": formatted_start_time,  # フォーマット後の時刻を格納
+            "end_time": formatted_end_time
+        }
+        subject_id = lecture_info[6]  # subject_id を取得
+        subject_count_id = lecture_info[7]  # 現在の subject_count_id
+        seat_number = lecture_info[8]  # 座席番号を取得
+    else:
+        return render_template('student/dashboard.html', alert_message="現在、参加中の講義はありません。", alert_type="warning")
+    
+    # subject_name の取得
+    cursor.execute('''
+        SELECT subject_name
+        FROM subjects
+        WHERE id = ?
+    ''', (subject_id,))
+    subject = cursor.fetchone()
+    subject_name = subject[0] if subject else "不明"
+
+    # 講義回数を取得
+    cursor.execute('''
+        SELECT id, start_time
+        FROM subject_counts
+        WHERE subject_id = ?
+        ORDER BY start_time ASC
+    ''', (subject_id,))
+    all_lectures = cursor.fetchall()
+
+    # 現在の講義が何回目かを計算
+    lecture_number = 1
+    for i, lecture in enumerate(all_lectures, start=1):
+        if lecture[0] == subject_count_id:  # 現在の `subject_count_id` に一致する場合
+            lecture_number = i
+            break
+
+    # student_subjects の情報を取得
+    cursor.execute('''
+        SELECT total_attentions, total_warnings
+        FROM student_subjects
+        WHERE student_id = ? AND subject_id = ?
+    ''', (current_user.id, subject_id))
+    subject_stats = cursor.fetchone()
+
+    total_attentions = subject_stats[0] if subject_stats else 0
+    total_warnings = subject_stats[1] if subject_stats else 0
+
+    # student_participations の情報を取得
+    cursor.execute('''
+        SELECT attention_count, warning_count
+        FROM student_participations
+        WHERE id = ?
+    ''', (participation_id,))
+    participation_stats = cursor.fetchone()
+
+    attention_count = participation_stats[0] if participation_stats else 0
+    warning_count = participation_stats[1] if participation_stats else 0
+    
+    # attentions情報を取得
+    cursor.execute('''
+        SELECT *
+        FROM attentions
+        WHERE student_participation_id = ?
+    ''', (participation_id,))
+    attentions = cursor.fetchall()
+    attentions= format_times(attentions,'timestamp')
+    
+    # warnings情報を取得
+    cursor.execute('''
+        SELECT id, timestamp, reason
+        FROM warnings
+        WHERE student_participation_id = ?
+    ''', (participation_id,))
+    warnings = cursor.fetchall()
+    warnings= format_times(warnings,'timestamp')
+
+    return render_template('student/lecture/show.html',
+        student_participation_id=participation_id,
+        current_lecture=current_lecture,
+        total_attentions=total_attentions,
+        total_warnings=total_warnings,
+        attention_count=attention_count,
+        warning_count=warning_count,
+        seat_number=seat_number,  # 座席番号をテンプレートに渡す
+        subject_name=subject_name,  # subject_name をテンプレートに渡す
+        lecture_number=lecture_number,  # 講義回数をテンプレートに渡す
+        attentions=attentions,
+        warnings=warnings
+    )
+
+
+def format_times(data, key):
+    """
+    指定したキーの値をフォーマットする関数。
+    :param data: 辞書のリストまたはsqlite3.Rowのリスト
+    :param key: フォーマット対象のキー名
+    :return: フォーマット済みの辞書リスト
+    """
+    formatted = []
+    for item in data:
+        # sqlite3.Rowを辞書に変換
+        item_dict = dict(item)
+        formatted.append({
+            **item_dict,
+            key: (
+                datetime.strptime(str(item_dict[key])[:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') 
+                if item_dict.get(key) 
+                else None
+            ),
+        })
+    return formatted

@@ -138,10 +138,10 @@ def end_session(session_id):
         (end_time, session_id,)
     )
     
-    # 参加している学生の学籍番号を取得
+    # 参加している学生の学籍番号とparticipation_idを取得
     cursor.execute(
         """
-        SELECT s.student_number 
+        SELECT s.student_number, sp.id AS participation_id
         FROM students s
         JOIN student_subjects ss ON s.id = ss.student_id
         JOIN student_participations sp ON ss.id = sp.student_subject_id
@@ -150,7 +150,6 @@ def end_session(session_id):
         (session_id,)
     )
     students = cursor.fetchall()
-    student_numbers = [student['student_number'] for student in students]
     
     
     # student_participationsのexit_timeを更新
@@ -172,11 +171,13 @@ def end_session(session_id):
     subject = cursor.fetchone()
     subject_id = subject['subject_id'] if subject else None
     
-    # 学生に講義終了を通知
-    for student_number in student_numbers:
+        # 学生に講義終了を通知
+    for student in students:
+        student_number = student['student_number']
+        participation_id = student['participation_id']
         socketio.emit('session_exit', {
             'message': '講義が終了したため、退出します。', 
-            'redirect_url': url_for('app.student.dashboard.dashboard')
+            'redirect_url': url_for('app.student.lecture.show', participation_id=participation_id)
         }, room=student_number)
 
     if subject_id:
