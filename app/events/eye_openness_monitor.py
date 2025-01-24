@@ -378,6 +378,7 @@ def adjust_baseline(data):
 
 
 @socketio.on('response_low_eye_openness')
+@student_required
 def handle_low_eye_openness_response(data):
     attention_id = data['attention_id']
     response = data['response']
