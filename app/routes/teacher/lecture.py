@@ -270,6 +270,16 @@ def session(session_id):
             'start_time': datetime.strptime(lecture_session['start_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if lecture_session['start_time'] else None,
             'end_time': datetime.strptime(lecture_session['end_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if lecture_session['end_time'] else None,
         }
+        
+    # lecture_sessionのsubject_count_idに基づいてsubject_nameを取得
+    if lecture_session:
+        subject_id = lecture_session['subject_id']
+        cursor.execute("SELECT subject_name FROM subjects WHERE id = ?", (subject_id,))
+        subject_name = cursor.fetchone()
+
+        # subject_nameが取得できた場合、lecture_sessionに追加
+        if subject_name:
+            lecture_session['subject_name'] = subject_name['subject_name']
 
     # 講義回に参加している学生の詳細を取得
     cursor.execute("""
@@ -282,14 +292,7 @@ def session(session_id):
     student_participations = cursor.fetchall()
     student_participations=format_times(student_participations,'attendance_time')
     
-    # # 学生のattendance_timeをフォーマット
-    # formatted_student_participations = []
-    # for student in student_participations:
-    #     formatted_student_participations.append({
-    #         **student,
-    #         'attendance_time': datetime.strptime(student['attendance_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if student['attendance_time'] else None,
-    #     })
-    
+
     
     # 現在時刻の30秒前を取得
     one_minute_ago = datetime.now() - timedelta(minutes=0.5)
@@ -311,16 +314,9 @@ def session(session_id):
     inactive_students = cursor.fetchall()
     inactive_students=format_times(inactive_students,'attendance_time')
     
-    # # inactive_studentsのattendance_timeをフォーマット
-    # formatted_inactive_students = []
-    # for student in inactive_students:
-    #     formatted_inactive_students.append({
-    #         **student,
-    #         'attendance_time': datetime.strptime(student['attendance_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if student['attendance_time'] else None,
-    #     })
 
     return render_template('teacher/lecture/session.html', 
-                           lecture_session=lecture_session, 
+                           lecture_session=lecture_session,
                            student_participations=student_participations,
                            inactive_students=inactive_students
                            )
