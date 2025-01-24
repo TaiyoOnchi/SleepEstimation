@@ -157,44 +157,11 @@
         
 
         // サーバーからの警告メッセージを受信したら通知を表示
-        socket.on('low_eye_openness_alert', function(data) {
+        socket.on('eye_openness_alert', function(data) {
             showNotification(data.message);
         });
 
 
-        socket.on('attention_alert', function(data) {
-            // 通知を表示
-            showNotification(data.message);
-            
-            // 注意回数をインクリメント
-            const attentionCountElement = document.getElementById('attention-count');
-            const totalAttentionsElement = document.getElementById('total-attentions');
-            let currentAttentionCount = parseInt(attentionCountElement.textContent);
-            let totalAttentionsCount = parseInt(totalAttentionsElement.textContent);
-        
-            currentAttentionCount += 1;
-            totalAttentionsCount += 1;
-        
-            attentionCountElement.textContent = currentAttentionCount;
-            totalAttentionsElement.textContent = totalAttentionsCount;
-        });
-        
-        socket.on('warning_alert', function(data) {
-            // 通知を表示
-            showNotification(data.message);
-            
-            // 警告回数をインクリメント
-            const warningCountElement = document.getElementById('warning-count');
-            const totalWarningsElement = document.getElementById('total-warnings');
-            let currentWarningCount = parseInt(warningCountElement.textContent);
-            let totalWarningsCount = parseInt(totalWarningsElement.textContent);
-        
-            currentWarningCount += 1;
-            totalWarningsCount += 1;
-        
-            warningCountElement.textContent = currentWarningCount;
-            totalWarningsElement.textContent = totalWarningsCount;
-        });
         
 
         socket.on('session_exit', function(data) {
@@ -261,10 +228,7 @@
             
         });
         
-        socket.on('baseline_adjusted', function(data) {
-            console.log(data.message);
-            alert(data.message); // 必要に応じてアラート表示
-        });
+
         
         // サーバーからの画像データを受信して <img> タグに表示
         socket.on('processed_frame', (data) => {

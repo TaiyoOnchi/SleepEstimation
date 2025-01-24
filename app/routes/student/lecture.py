@@ -218,23 +218,6 @@ def join():
 
 
 
-@lecture_bp.route('/lecture/warnings/<int:participation_id>')
-@student_required
-def warnings(participation_id):
-    conn = current_app.get_db()
-    cursor = conn.cursor()
-
-    # warnings テーブルからデータを取得
-    cursor.execute('''
-        SELECT id, timestamp, reason
-        FROM warnings
-        WHERE student_participation_id = ?
-        ORDER BY timestamp DESC
-    ''', (participation_id,))
-    warnings_list = cursor.fetchall()
-
-    return render_template('student/lecture/warnings.html', warnings=warnings_list)
-
 
 @lecture_bp.route('/lecture/show/<int:participation_id>')
 @student_required

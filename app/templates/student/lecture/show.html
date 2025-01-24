@@ -72,11 +72,7 @@
                           </div>
                           <div class="bg-white px-3 py-2 rounded shadow-sm">
                               <span class="block text-xs text-gray-500">今回の警告回数:</span>
-                              <a href="{{ url_for('app.student.lecture.warnings', participation_id=student_participation_id) }}" 
-                                  id="warning-count" 
-                                  class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
-                                  {{ warning_count }}
-                              </a>
+                              <span id="warning-count" class="text-sm font-medium">{{ warning_count }}</span>
                           </div>
                       </div>
                 </div>
