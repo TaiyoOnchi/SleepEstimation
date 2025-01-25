@@ -18,13 +18,13 @@
         <div class="container mx-auto px-4 py-2 max-w-6xl">
             
             <div class="bg-white shadow-md rounded-lg p-6">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">講義回詳細</h1>
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ lecture_session.subject_name }}[第{{ lecture_session.session_number }}回]</h1>
                 
 
                 <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 flex items-center justify-between">
                     <!-- 左側: タイトル -->
                     <h2 class="text-lg font-semibold text-gray-700 flex-1">
-                        {{lecture_session.subject_name}} ({{ lecture_session.day_of_week }}) 第{{ lecture_session.period }}限 - {{ lecture_session.classroom }}
+                        {{ lecture_session.day_of_week }}曜日 - {{ lecture_session.period }}限 - {{ lecture_session.classroom }}
                     </h2>
                     
                     <!-- 右側: 詳細情報 -->

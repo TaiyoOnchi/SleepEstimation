@@ -281,8 +281,19 @@ def session(session_id):
             'end_time': datetime.strptime(lecture_session['end_time'][:16], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M') if lecture_session['end_time'] else None,
         }
         
-    # lecture_sessionのsubject_count_idに基づいてsubject_nameを取得
-    if lecture_session:
+        # 第何回かを計算
+        subject_id = lecture_session['subject_id']
+        cursor.execute("""
+            SELECT id
+            FROM subject_counts
+            WHERE subject_id = ?
+            ORDER BY id
+        """, (subject_id,))
+        all_sessions = cursor.fetchall()
+        session_number = next((i + 1 for i, session in enumerate(all_sessions) if session['id'] == session_id), None)
+        lecture_session['session_number'] = session_number
+        
+        # lecture_sessionのsubject_count_idに基づいてsubject_nameを取得
         subject_id = lecture_session['subject_id']
         cursor.execute("SELECT subject_name FROM subjects WHERE id = ?", (subject_id,))
         subject_name = cursor.fetchone()
