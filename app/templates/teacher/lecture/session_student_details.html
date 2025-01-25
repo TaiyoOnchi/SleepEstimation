@@ -214,6 +214,43 @@
                 }
             };
 
+            // カスタムプラグインでラベル部分のみに縦線を描画
+            const verticalLinePlugin = {
+                id: 'verticalLinePlugin',
+                beforeDraw(chart) {
+                    const { ctx, chartArea, scales: { x } } = chart;
+            
+                    // 前回のラベルを記憶する変数
+                    let previousLabel = null;
+            
+                    // x 軸の ticks をフラット化して処理
+                    const ticks = x.ticks;
+            
+                    // x 軸のラベルに対応する縦線を描画
+                    ticks.forEach((tick, index) => {
+                        // 現在のラベルを取得
+                        const currentLabel = tick.label;
+            
+                        // ラベルが異なる場合のみ縦線を描画
+                        if (index === 0 || currentLabel !== previousLabel) {
+                            const xPos = x.getPixelForTick(index);
+            
+                            ctx.save();
+                            ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'; // 薄いグレー
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(xPos, chartArea.top); // 上端
+                            ctx.lineTo(xPos, chartArea.bottom); // 下端
+                            ctx.stroke();
+                            ctx.restore();
+            
+                            // ラベルを更新
+                            previousLabel = currentLabel;
+                        }
+                    });
+                },
+            };
+
             // Chart.js のインスタンス作成
             const ctx = document.getElementById('eyeOpennessChart').getContext('2d');
             new Chart(ctx, {
@@ -247,6 +284,19 @@
                     scales: {
                         x: {
                             title: { display: true, text: '時間 (HH:mm)' },
+                            ticks: {
+                                autoSkip: false, // 自動スキップを無効化
+                                callback: function (value, index, values) {
+                                    // 前のラベルと異なる場合のみ表示
+                                    if (index === 0 || timestamps[index] !== timestamps[index - 1]) {
+                                        return timestamps[index];
+                                    }
+                                    return ''; // 同じ場合は空文字
+                                },
+                            },
+                            grid: {
+                                drawOnChartArea: false, // グラフ内の縦線を非表示
+                            },
                         },
                         y: {
                             title: { display: true, text: '開眼率 (%)' },
@@ -255,8 +305,9 @@
                         },
                     },
                 },
-                plugins: [thresholdLinePlugin], // プラグインを適用
+                plugins: [thresholdLinePlugin,verticalLinePlugin], // プラグインを適用
             });
+
         }
 
 

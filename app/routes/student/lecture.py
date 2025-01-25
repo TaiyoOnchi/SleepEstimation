@@ -256,12 +256,36 @@ def show(participation_id):
     
     # subject_name の取得
     cursor.execute('''
-        SELECT subject_name
+        SELECT id,subject_name
         FROM subjects
         WHERE id = ?
     ''', (subject_id,))
     subject = cursor.fetchone()
-    subject_name = subject[0] if subject else "不明"
+    subject_id = subject[0]
+    subject_name = subject[1]
+    
+    # 開眼率閾値取得
+    cursor.execute('''
+        SELECT ero_threshold
+        FROM subjects
+        WHERE subjects.id = ?
+    ''', (subject_id,))
+    ero_threshold_row = cursor.fetchone()
+
+    if ero_threshold_row:
+        ero_threshold = ero_threshold_row[0]  # ero_threshold を取得
+    else:
+        raise ValueError("ero_threshold could not be found for the given subject_id")
+
+    
+    # eye_openness情報を取得
+    cursor.execute('''
+        SELECT *
+        FROM eye_openness
+        WHERE student_participation_id = ?
+    ''', (participation_id,))
+    eye_openness = cursor.fetchall()
+    eye_openness= format_times(eye_openness,'timestamp')
 
     # 講義回数を取得
     cursor.execute('''
@@ -312,7 +336,7 @@ def show(participation_id):
     
     # warnings情報を取得
     cursor.execute('''
-        SELECT id, timestamp, reason
+        SELECT *
         FROM warnings
         WHERE student_participation_id = ?
     ''', (participation_id,))
@@ -331,6 +355,8 @@ def show(participation_id):
         lecture_number=lecture_number,  # 講義回数をテンプレートに渡す
         attentions=attentions,
         warnings=warnings,
+        eye_openness=eye_openness,
+        ero_threshold=ero_threshold,
         subject_id=subject_id
     )
 

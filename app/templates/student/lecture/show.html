@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ subject_name }} - 講義詳細</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
     {% include 'partials/header.html' %}
@@ -162,6 +163,20 @@
         </div>
     </div>
 
+    <!-- 開眼率情報 -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">開眼率履歴</h2>
+        {% if eye_openness and eye_openness|length > 0 %}
+            <canvas id="eyeOpennessChart" width="400" height="200"></canvas>
+            <script>
+                // Flask から受け取ったデータを JavaScript に渡す
+                const eyeOpennessData = {{ eye_openness | tojson }};
+            </script>
+        {% else %}
+            <p class="text-gray-600">開眼率データはありません。</p>
+        {% endif %}
+    </div>
+
     <div class="container mx-auto px-4 mb-8 max-w-4xl">
         <div class="flex justify-center space-x-4">
             <a href="{{ url_for('app.student.lecture.subject_counts',subject_id=subject_id) }}" 
@@ -175,5 +190,145 @@
         </div>
     </div>
 
+    <script>
+        const ero_threshold = {{ ero_threshold | tojson }};
+        if (eyeOpennessData) {
+            const timestamps = eyeOpennessData.map(data => {
+                const date = new Date(data.timestamp);
+                return date.toTimeString().slice(0, 5); // HH:mm の形式を抽出
+            });
+            const rightEyeOpenness = eyeOpennessData.map(data => data.right_eye_openness);
+            const leftEyeOpenness = eyeOpennessData.map(data => data.left_eye_openness);
+
+            // Chart.js カスタムプラグイン定義
+            const thresholdLinePlugin = {
+                id: 'thresholdLine',
+                beforeDraw(chart) {
+                    const { ctx, scales: { y } } = chart;
+
+                    // ero_threshold の赤線
+                    if (ero_threshold !== undefined) {
+                        ctx.save();
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([5, 5]); // 点線
+                        ctx.beginPath();
+                        ctx.moveTo(chart.chartArea.left, y.getPixelForValue(ero_threshold));
+                        ctx.lineTo(chart.chartArea.right, y.getPixelForValue(ero_threshold));
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+
+                    // 100% の緑線
+                    ctx.save();
+                    ctx.strokeStyle = 'green';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([]);
+                    ctx.beginPath();
+                    ctx.moveTo(chart.chartArea.left, y.getPixelForValue(100));
+                    ctx.lineTo(chart.chartArea.right, y.getPixelForValue(100));
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            };
+
+            // カスタムプラグインでラベル部分のみに縦線を描画
+            const verticalLinePlugin = {
+                id: 'verticalLinePlugin',
+                beforeDraw(chart) {
+                    const { ctx, chartArea, scales: { x } } = chart;
+            
+                    // 前回のラベルを記憶する変数
+                    let previousLabel = null;
+            
+                    // x 軸の ticks をフラット化して処理
+                    const ticks = x.ticks;
+            
+                    // x 軸のラベルに対応する縦線を描画
+                    ticks.forEach((tick, index) => {
+                        // 現在のラベルを取得
+                        const currentLabel = tick.label;
+            
+                        // ラベルが異なる場合のみ縦線を描画
+                        if (index === 0 || currentLabel !== previousLabel) {
+                            const xPos = x.getPixelForTick(index);
+            
+                            ctx.save();
+                            ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'; // 薄いグレー
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(xPos, chartArea.top); // 上端
+                            ctx.lineTo(xPos, chartArea.bottom); // 下端
+                            ctx.stroke();
+                            ctx.restore();
+            
+                            // ラベルを更新
+                            previousLabel = currentLabel;
+                        }
+                    });
+                },
+            };
+
+            // Chart.js のインスタンス作成
+            const ctx = document.getElementById('eyeOpennessChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [
+                        {
+                            label: '右目の開眼率',
+                            data: rightEyeOpenness,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true,
+                            tension: 0.4,
+                        },
+                        {
+                            label: '左目の開眼率',
+                            data: leftEyeOpenness,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: true,
+                            tension: 0.4,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: '時間 (HH:mm)' },
+                            ticks: {
+                                autoSkip: false, // 自動スキップを無効化
+                                callback: function (value, index, values) {
+                                    // 前のラベルと異なる場合のみ表示
+                                    if (index === 0 || timestamps[index] !== timestamps[index - 1]) {
+                                        return timestamps[index];
+                                    }
+                                    return ''; // 同じ場合は空文字
+                                },
+                            },
+                            grid: {
+                                drawOnChartArea: false, // グラフ内の縦線を非表示
+                            },
+                        },
+                        y: {
+                            title: { display: true, text: '開眼率 (%)' },
+                            min: 0,
+                            max: 150,
+                        },
+                    },
+                },
+                plugins: [thresholdLinePlugin,verticalLinePlugin], // プラグインを適用
+            });
+
+        }
+
+
+    </script>
 </body>
 </html>
