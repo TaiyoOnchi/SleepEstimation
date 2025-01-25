@@ -59,7 +59,8 @@
                                         <input type="hidden" name="modify_schedule" id="modify_schedule" value="false">
                                         <button type="button" 
                                                 onclick="showStartOptions()" 
-                                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                                                class="{% if another_active_session %}bg-gray-300 text-gray-500 cursor-not-allowed{% else %}bg-green-500 text-white hover:bg-green-600{% endif %} px-4 py-2 rounded transition-colors" 
+                                                {% if another_active_session %}disabled{% endif %}>
                                             講義を開始
                                         </button>
                                     </form>

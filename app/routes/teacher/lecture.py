@@ -40,9 +40,19 @@ def show(subject_id):
         
         # 辞書を新しい形式に更新
         lecture_sessions[i] = session_dict
+        
+    # 現在アクティブな講義（開講中の講義）を取得
+    cursor.execute("""
+        SELECT sc.*, s.subject_name
+        FROM subject_counts sc
+        JOIN subjects s ON sc.subject_id = s.id
+        WHERE sc.end_time IS NULL AND s.teacher_id = ?
+    """, (current_user.id,))
+    another_active_session = cursor.fetchone()
 
 
-    return render_template('teacher/lecture/show.html', subject=subject, lecture_sessions=lecture_sessions)
+
+    return render_template('teacher/lecture/show.html', subject=subject, lecture_sessions=lecture_sessions, another_active_session=another_active_session)
 
 
 # 講義コード生成
