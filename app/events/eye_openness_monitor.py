@@ -80,7 +80,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         
         
         
-        # 注意回数記録通知（10回連続で失敗）
+        # 注意回数記録通知（1分半連続で失敗）
         if decode_fail_count[student_number] == 45 and student_number not in sleep_start_time:
             conn = current_app.get_db()
             cursor = conn.cursor()
@@ -124,7 +124,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                     'attention_count': get_attention_count(participation_id)
                 }, room=teacher_room)
                 
-        # カメラアクセス失敗通知（5回連続で失敗）
+        # カメラアクセス失敗通知（30秒連続で通知）
         elif decode_fail_count[student_number] > 0 and decode_fail_count[student_number] % 15 == 0:
             socketio.emit('eye_openness_alert', {
                 'message': 'カメラにアクセスできません。\nブラウザの設定でカメラアクセスを許可してください。'
@@ -262,7 +262,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                     'attention_count': get_attention_count(participation_id)  # 現在の注意回数を取得
                 }, room=teacher_room)
                 
-        # 三回連続で閾値以下の場合、通知を表示
+        # 16秒連続で閾値以下の場合、通知を表示
         elif low_eye_openness_count[student_number] > 0 and low_eye_openness_count[student_number] % 8 == 0:
             socketio.emit('eye_openness_alert', {'message': '開眼率が低下しています！'}, room=student_number)
 
@@ -278,7 +278,7 @@ def monitor_eye_openness(data):  # 開眼率測定
             'eorThreshold': eor_threshold
         }, room=student_number)
 
-        # 開眼率取得失敗が10回連続の場合、通知を送信
+        # 開眼率取得失敗が1分半連続の場合、通知を送信
         if failed_eye_openness_count[student_number] ==45 and student_number not in sleep_start_time:
             
             # 注意回数が記録された際の処理
@@ -321,7 +321,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                     'attention_count': get_attention_count(participation_id)  # 現在の注意回数を取得
                 }, room=teacher_room)
                 
-        # 開眼率取得失敗が5回連続の場合、通知を送信
+        # 開眼率取得失敗が30秒連続の場合、通知を送信
         elif failed_eye_openness_count[student_number] > 0 and failed_eye_openness_count[student_number] % 15 == 0:
             socketio.emit('eye_openness_alert', {'message': '開眼率の検出に失敗しています。\nカメラの状態を確認してください。'}, room=student_number)
 
