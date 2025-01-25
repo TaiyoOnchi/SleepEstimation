@@ -266,16 +266,16 @@ def show(participation_id):
     
     # 開眼率閾値取得
     cursor.execute('''
-        SELECT ero_threshold
+        SELECT eor_threshold
         FROM subjects
         WHERE subjects.id = ?
     ''', (subject_id,))
-    ero_threshold_row = cursor.fetchone()
+    eor_threshold_row = cursor.fetchone()
 
-    if ero_threshold_row:
-        ero_threshold = ero_threshold_row[0]  # ero_threshold を取得
+    if eor_threshold_row:
+        eor_threshold = eor_threshold_row[0]  # eor_threshold を取得
     else:
-        raise ValueError("ero_threshold could not be found for the given subject_id")
+        raise ValueError("eor_threshold could not be found for the given subject_id")
 
     
     # eye_openness情報を取得
@@ -356,7 +356,7 @@ def show(participation_id):
         attentions=attentions,
         warnings=warnings,
         eye_openness=eye_openness,
-        ero_threshold=ero_threshold,
+        eor_threshold=eor_threshold,
         subject_id=subject_id
     )
 

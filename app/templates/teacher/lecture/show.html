@@ -38,7 +38,7 @@
                             <td class="py-3 px-4">{{ subject.default_classroom }}</td>
                             <td class="py-3 px-4">{{ subject.default_day_of_week }}曜</td>
                             <td class="py-3 px-4">{{ subject.default_period }}限</td>
-                            <td class="py-3 px-4">{{ subject.ero_threshold }}%</td>
+                            <td class="py-3 px-4">{{ subject.eor_threshold }}%</td>
                             <td class="py-3 px-4">
                                 {% set active_session = lecture_sessions|selectattr('end_time', 'equalto', None)|first %}
                                 {% if active_session %}

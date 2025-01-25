@@ -129,8 +129,8 @@
 
         socket.on('eye_openness_update', function(data) {
             const maxEyeOpenness = data.maxEyeOpenness;
-            const eroThreshold = data.eroThreshold;
-            const warningThreshold = ((100 - eroThreshold) / 2) + eroThreshold;
+            const eorThreshold = data.eorThreshold;
+            const warningThreshold = ((100 - eorThreshold) / 2) + eorThreshold;
         
             const videoContainer = document.getElementById('video-container');
             const eyeOpennessDisplay = document.getElementById('eye-openness-display');
@@ -144,7 +144,7 @@
                 videoContainer.className = 'border-8 border-green-500 rounded-lg mb-4';
                 eyeOpennessDisplay.textContent = `開眼率: ${maxEyeOpenness.toFixed(2)}%`;
                 eyeOpennessDisplay.className = 'text-center text-green-500 font-medium mb-2';
-            } else if (maxEyeOpenness >= eroThreshold) {
+            } else if (maxEyeOpenness >= eorThreshold) {
                 videoContainer.className = 'border-8 border-yellow-500 rounded-lg mb-4';
                 eyeOpennessDisplay.textContent = `開眼率: ${maxEyeOpenness.toFixed(2)}%`;
                 eyeOpennessDisplay.className = 'text-center text-yellow-500 font-medium mb-2';

@@ -210,7 +210,7 @@ def create():
     default_classroom = request.form.get('default_classroom')
     default_day_of_week = request.form.get('default_day_of_week')
     default_period = int(request.form.get('default_period'))
-    ero_threshold = int(request.form.get('ero_threshold') or 50)  # デフォルトを50に設定
+    eor_threshold = int(request.form.get('eor_threshold') or 50)  # デフォルトを50に設定
 
     # 重複する講義名と曜日、教室、時限の確認
     cursor.execute('SELECT COUNT(*) FROM subjects WHERE subject_name = ?', (subject_name,))
@@ -229,9 +229,9 @@ def create():
     # 新しい講義を登録
     cursor.execute('''
         INSERT INTO subjects (teacher_id, subject_name, default_classroom, default_day_of_week, 
-                              default_period, ero_threshold)
+                              default_period, eor_threshold)
         VALUES (?, ?, ?, ?, ?, ?)
-    ''', (current_user.id, subject_name, default_classroom, default_day_of_week, default_period, ero_threshold))
+    ''', (current_user.id, subject_name, default_classroom, default_day_of_week, default_period, eor_threshold))
     conn.commit()
 
     flash("講義が正常に作成されました。", "success")
@@ -451,7 +451,7 @@ def session_student_details(session_id, student_id):
     conn = current_app.get_db()
     cursor = conn.cursor()
     
-    # `subjectsのero_threshold` を取得
+    # `subjectsのeor_threshold` を取得
     cursor.execute('''
         SELECT subject_id
         FROM subject_counts
@@ -464,16 +464,16 @@ def session_student_details(session_id, student_id):
         subject_id = subject_id_row[0]  # sqlite3.Row から subject_id を取得
 
         cursor.execute('''
-            SELECT ero_threshold
+            SELECT eor_threshold
             FROM subjects
             WHERE subjects.id = ?
         ''', (subject_id,))
-        ero_threshold_row = cursor.fetchone()
+        eor_threshold_row = cursor.fetchone()
 
-        if ero_threshold_row:
-            ero_threshold = ero_threshold_row[0]  # ero_threshold を取得
+        if eor_threshold_row:
+            eor_threshold = eor_threshold_row[0]  # eor_threshold を取得
         else:
-            raise ValueError("ero_threshold could not be found for the given subject_id")
+            raise ValueError("eor_threshold could not be found for the given subject_id")
     else:
         raise ValueError("subject_id could not be found for the given session_id")
     
@@ -581,7 +581,7 @@ def session_student_details(session_id, student_id):
                         warnings=warnings,
                         eye_openness=eye_openness,
                         session_id=session_id,
-                        ero_threshold=ero_threshold)
+                        eor_threshold=eor_threshold)
 
 
 def format_times(data, key):

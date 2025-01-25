@@ -148,9 +148,9 @@ def monitor_eye_openness(data):  # 開眼率測定
     # データベースから基準値を取得
     conn = current_app.get_db()
     cursor = conn.cursor()
-    # データベースから基準値とero_thresholdを取得
+    # データベースから基準値とeor_thresholdを取得
     cursor.execute('''
-        SELECT s.right_eye_baseline, s.left_eye_baseline, sub.ero_threshold
+        SELECT s.right_eye_baseline, s.left_eye_baseline, sub.eor_threshold
         FROM students s
         JOIN student_subjects ss ON s.id = ss.student_id
         JOIN subjects sub ON ss.subject_id = sub.id
@@ -162,7 +162,7 @@ def monitor_eye_openness(data):  # 開眼率測定
     if not user_data:
         return
 
-    right_eye_baseline, left_eye_baseline, ero_threshold = user_data
+    right_eye_baseline, left_eye_baseline, eor_threshold = user_data
     _, eye_openness = process_image(frame)
 
     # 学生が辞書に存在しない場合の初期化
@@ -187,11 +187,11 @@ def monitor_eye_openness(data):  # 開眼率測定
         max_eye_openness = max(right_eye_ratio, left_eye_ratio)
         socketio.emit('eye_openness_update', {
             'maxEyeOpenness': max_eye_openness,
-            'eroThreshold': ero_threshold
+            'eorThreshold': eor_threshold
         }, room=student_number)
 
         
-        if max_eye_openness < ero_threshold: # 現在の開眼率が閾値未満の場合、リストに追加
+        if max_eye_openness < eor_threshold: # 現在の開眼率が閾値未満の場合、リストに追加
             low_eye_openness_count[student_number] += 1
             
         
@@ -275,7 +275,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         failed_eye_openness_count[student_number] += 1
         socketio.emit('eye_openness_update', {
             'avgEyeOpenness': None,  # 測定できない場合はNullを送信
-            'eroThreshold': ero_threshold
+            'eorThreshold': eor_threshold
         }, room=student_number)
 
         # 開眼率取得失敗が10回連続の場合、通知を送信

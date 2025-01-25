@@ -173,7 +173,7 @@
     </div>
 
     <script>
-        const ero_threshold = {{ ero_threshold | tojson }};
+        const eor_threshold = {{ eor_threshold | tojson }};
         if (eyeOpennessData) {
             const timestamps = eyeOpennessData.map(data => {
                 const date = new Date(data.timestamp);
@@ -188,15 +188,15 @@
                 beforeDraw(chart) {
                     const { ctx, scales: { y } } = chart;
 
-                    // ero_threshold の赤線
-                    if (ero_threshold !== undefined) {
+                    // eor_threshold の赤線
+                    if (eor_threshold !== undefined) {
                         ctx.save();
                         ctx.strokeStyle = 'red';
                         ctx.lineWidth = 2;
                         ctx.setLineDash([5, 5]); // 点線
                         ctx.beginPath();
-                        ctx.moveTo(chart.chartArea.left, y.getPixelForValue(ero_threshold));
-                        ctx.lineTo(chart.chartArea.right, y.getPixelForValue(ero_threshold));
+                        ctx.moveTo(chart.chartArea.left, y.getPixelForValue(eor_threshold));
+                        ctx.lineTo(chart.chartArea.right, y.getPixelForValue(eor_threshold));
                         ctx.stroke();
                         ctx.restore();
                     }
