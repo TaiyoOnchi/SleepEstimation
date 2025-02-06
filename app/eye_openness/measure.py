@@ -177,28 +177,3 @@ def calculate_perpendicular_point(eye_head, eye_tail, lid_point):
     perpendicular_point = np.array(eye_head) + projection_length * eye_line_unit_vector
     return perpendicular_point
 
-
-# def calculate_pitch_angle(landmarks, img):
-#     # 顎の先端と鼻の先端の座標を取得（3D座標を使用）
-#     nose_tip = np.array([landmarks[1].x, landmarks[1].y, landmarks[1].z])
-#     chin = np.array([landmarks[152].x, landmarks[152].y, landmarks[152].z])
-
-#     # z方向も含めた高さ差（yとzの変化量のみを考慮）
-#     y_diff = chin[1] - nose_tip[1]
-#     z_diff = chin[2] - nose_tip[2]
-
-#     # ピッチ角を計算（ラジアンから度へ変換）
-#     pitch_angle = math.degrees(math.atan2(z_diff, y_diff))
-#     return pitch_angle
-
-
-
-# # ピッチ角に基づいて目の開眼率を補正する関数
-# def apply_pitch_correction(eye_openness, pitch_angle):
-#     # ピッチ角が前傾している場合、開眼率を調整（角度が大きいほど補正）
-#     n=50
-#     correction_factor = 1 + abs(abs(pitch_angle)-90) / n  # 上を向くと90↓、下を向くと90↑(補正変更可)
-#     # 開眼率を補正した値で返す
-#     corrected_eye_openness = eye_openness * correction_factor
-#     print(corrected_eye_openness ,eye_openness ,correction_factor)
-#     return corrected_eye_openness
