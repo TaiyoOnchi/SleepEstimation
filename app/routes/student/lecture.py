@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request,current_app,flash
-from flask_login import login_required, current_user
+from flask import Blueprint, render_template, redirect, url_for, request,current_app,flash
+from flask_login import current_user
 from app.utils import student_required
 from datetime import datetime
 from app import socketio

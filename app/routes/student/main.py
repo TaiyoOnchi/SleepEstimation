@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session,current_app
+from flask import Blueprint, render_template, current_app
 from flask_login import current_user
 from app.utils import student_required
 from datetime import datetime

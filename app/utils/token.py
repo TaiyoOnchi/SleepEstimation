@@ -1,5 +1,4 @@
 from itsdangerous import URLSafeTimedSerializer
-from flask import jsonify
 from config import Config
 
 # トークンを生成・検証するためのシリアライザを設定

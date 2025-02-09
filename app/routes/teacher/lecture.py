@@ -344,6 +344,7 @@ def session(session_id):
     
     
 @lecture_bp.route('/lecture/check_eye_openness', methods=['GET'])
+@teacher_required
 def check_eye_openness():
     session_id = request.args.get('session_id')  # フロントから渡されるセッションID
     if not session_id:
@@ -468,6 +469,7 @@ def submit_warning():
 
 
 @lecture_bp.route('/session/<int:session_id>/student/<int:student_id>')
+@teacher_required
 def session_student_details(session_id, student_id):
     conn = current_app.get_db()
     cursor = conn.cursor()

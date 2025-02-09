@@ -81,7 +81,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         
         
         # 注意回数記録通知（1分半連続で失敗）
-        if decode_fail_count[student_number] == 45 and student_number not in sleep_start_time:
+        if decode_fail_count[student_number] == 30 and student_number not in sleep_start_time:
             conn = current_app.get_db()
             cursor = conn.cursor()
             cursor.execute('''
@@ -183,8 +183,8 @@ def monitor_eye_openness(data):  # 開眼率測定
         
         save_eye_openness(conn, participation_id, eye_right_rounded, eye_left_rounded)
 
-        # 両目の平均開眼率を計算
-        max_eye_openness = max(right_eye_ratio, left_eye_ratio)
+        # 両目の最大開眼率を計算
+        max_eye_openness = min(right_eye_ratio, left_eye_ratio)
         socketio.emit('eye_openness_update', {
             'maxEyeOpenness': max_eye_openness,
             'eorThreshold': eor_threshold
@@ -216,7 +216,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 low_eye_openness_count[student_number] = 0  # カウンターをリセット
                 
             
-        if low_eye_openness_count[student_number] == 24 and student_number not in sleep_start_time:
+        if low_eye_openness_count[student_number] == 1 and student_number not in sleep_start_time:
             # 注意回数が記録された際の処理
             cursor.execute('''
                 UPDATE student_subjects
@@ -262,8 +262,8 @@ def monitor_eye_openness(data):  # 開眼率測定
                     'attention_count': get_attention_count(participation_id)  # 現在の注意回数を取得
                 }, room=teacher_room)
                 
-        # 16秒連続で閾値以下の場合、通知を表示
-        elif low_eye_openness_count[student_number] > 0 and low_eye_openness_count[student_number] % 8 == 0:
+        # 連続で閾値以下の場合、通知を表示
+        elif low_eye_openness_count[student_number] > 0 and low_eye_openness_count[student_number] % 5 == 0:
             socketio.emit('eye_openness_alert', {'message': '開眼率が低下しています！'}, room=student_number)
 
 
@@ -278,8 +278,8 @@ def monitor_eye_openness(data):  # 開眼率測定
             'eorThreshold': eor_threshold
         }, room=student_number)
 
-        # 開眼率取得失敗が1分半連続の場合、通知を送信
-        if failed_eye_openness_count[student_number] ==45 and student_number not in sleep_start_time:
+        # 開眼率取得失敗が連続の場合、通知を送信
+        if failed_eye_openness_count[student_number] == 30 and student_number not in sleep_start_time:
             
             # 注意回数が記録された際の処理
             cursor.execute('''

@@ -5,62 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>メインページ</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <!-- FontAwesome CDN追加 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 h-screen overflow-hidden flex flex-col">
     {% include 'partials/header.html' %}<!-- ヘッダーを読み込み -->
 
-    <div class="container mx-auto px-4 py-4 max-w-2xl">
-
-        <div class="bg-white rounded-lg shadow-lg p-2">
+    <div class="container mx-auto px-4 py-2 flex-grow flex flex-col max-w-2xl">
+        <div class="bg-white rounded-lg shadow-lg p-2 flex-shrink-0">
             {% include 'partials/flash_messages.html' %}
             
-            <h1 class="text-3xl font-bold text-center text-gray-800">メインページ</h1>
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">メインページ</h1>
 
-
-
-{% if current_lecture %}
-    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-4 mb-4">
-        <div class="bg-white rounded-lg p-4 border border-blue-100 hover:shadow-md transition-shadow duration-300">
-            <div class="flex items-center space-x-3">
-                <div>
-                    <span class="text-lg font-bold text-blue-800 flex items-center">
-                        {{ current_lecture.subject_name }} 
-                        <span class="text-blue-600 text-sm ml-1">第{{ current_lecture.session_number }}回</span>
-                    </span>
-                </div>
-                <div class="text-sm text-gray-600 flex items-center space-x-2">
-                    <i class="fas fa-calendar text-blue-500 mr-2"></i>
-                    <span>{{ current_lecture.classroom }}-{{ current_lecture.period }}時限-{{ current_lecture.day_of_week }}</span>
-                </div>
-                <div class="text-sm text-gray-600 flex items-center space-x-2">
-                    <i class="fas fa-clock text-blue-500"></i>
-                    <span>{{ current_lecture.start_time }}</span>
-                </div>
-                <div class="text-sm text-gray-600 flex items-center space-x-2">
-                    <i class="fas fa-chair text-blue-500"></i>
-                    <span>座席番号: {{ seat_number }}</span>
+            {% if current_lecture %}
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-3 mb-2">
+                <div class="bg-white rounded-lg p-3 border border-blue-100 hover:shadow-md transition-shadow duration-300">
+                    <div class="flex flex-wrap items-center justify-between space-y-1">
+                        <div>
+                            <span class="text-lg font-bold text-blue-800 flex items-center">
+                                {{ current_lecture.subject_name }} 
+                                <span class="text-blue-600 text-sm ml-1">第{{ current_lecture.session_number }}回</span>
+                            </span>
+                        </div>
+                        <div class="text-sm text-gray-600 flex items-center space-x-2">
+                            <i class="fas fa-calendar text-blue-500 mr-2"></i>
+                            <span>{{ current_lecture.classroom }}-{{ current_lecture.period }}時限-{{ current_lecture.day_of_week }}</span>
+                        </div>
+                        <div class="text-sm text-gray-600 flex items-center space-x-2">
+                            <i class="fas fa-clock text-blue-500 mr-2"></i>
+                            <span>{{ current_lecture.start_time }}</span>
+                        </div>
+                        <div class="text-sm text-gray-600 flex items-center space-x-2">
+                            <i class="fas fa-chair text-blue-500 mr-2"></i>
+                            <span>座席番号: {{ seat_number }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% else %}
+            <p class="text-center text-gray-500 bg-gray-100 rounded-lg p-3">現在参加中の講義はありません。</p>
+            {% endif %}
+
+            <div class="text-center text-xs text-gray-600 mb-2">
+                <p>バックグラウンドで起動したまま、講義を受けてください</p>
+                <p>二秒ごとに映像が更新されます</p>
+            </div>
+        </div>
+
+        <div id="eye-openness-display" class="text-center text-gray-500 font-medium mb-1"></div>
+        <div id="video-container" class="flex-grow overflow-hidden">
+            <img id="processedImage" class="w-full h-full object-cover rounded-lg shadow-md" alt="Processed Image">
         </div>
     </div>
-{% else %}
-    <p class="text-center text-gray-500 bg-gray-100 rounded-lg p-4">現在参加中の講義はありません。</p>
-{% endif %}
-
-            <p class="text-center text-sm text-gray-600">バックグラウンドで起動したまま、講義を受けてください</p>
-            <p class="text-center text-sm text-gray-600">二秒ごとに映像が更新されます</p>
-        </div>
-
-
-        <div id="eye-openness-display" class="text-center text-gray-500 font-medium"></div>
-        <div id="video-container" class="border-8 border-gray-300 rounded-lg">
-            <img id="processedImage" class="w-full rounded-lg shadow-md" alt="Processed Image">
-        </div>
-        
-    </div>
-
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script>

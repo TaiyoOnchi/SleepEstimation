@@ -1,4 +1,4 @@
-from flask import current_app, g
+from flask import g
 import sqlite3
 from config import Config
 

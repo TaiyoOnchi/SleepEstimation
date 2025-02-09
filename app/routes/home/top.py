@@ -1,5 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, session
-from flask_login import current_user
+from flask import Blueprint, render_template
 from app.utils import handle_authenticated_user
 
 top_bp = Blueprint('top', __name__)
