@@ -26,15 +26,7 @@ def process_image(frame):
         # 目の開眼率を計算
         eye_openness = calculate_eye_openness(landmarks, frame)
 
-        # # 各目（'eye_right' と 'eye_left'）に対して、ピッチ角を考慮した補正を適用
-        # corrected_eye_openness = {
-            
-        #     # 'eye_right' と 'eye_left' に対応する開眼率（openness）を apply_pitch_correction 関数で補正
-        #     eye: apply_pitch_correction(openness, pitch_angle) 
-            
-        #     # eye_openness.items() → 目の開眼率が格納されている辞書からキー（'eye_right'、'eye_left'）と値（目の開眼率）を取得
-        #     for eye, openness in eye_openness.items()  # eye → 'eye_right' , 'eye_left'、openness → 開眼率(0.2など)
-        # }
+
         # 目のランドマークを描画
         draw_eye_features(frame, landmarks)
         

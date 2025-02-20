@@ -61,9 +61,12 @@ failed_eye_openness_count = {}  # 開眼率取得失敗の回数を追跡する�
 sleep_start_time = {} # 居眠り開始タイムスタンプを記録する辞書
 
 
+import time
+
 @socketio.on('monitor_eye_openness')
 @student_required
 def monitor_eye_openness(data):  # 開眼率測定
+    cycle_start = time.perf_counter()  # サイクル開始時刻を記録
     student_number = current_user.student_number
     # データを受け取る
     image_data = data['imageData']
@@ -77,8 +80,6 @@ def monitor_eye_openness(data):  # 開眼率測定
         if student_number not in decode_fail_count:
             decode_fail_count[student_number] = 0
         decode_fail_count[student_number] += 1
-        
-        
         
         # 注意回数記録通知（1分半連続で失敗）
         if decode_fail_count[student_number] == 30 and student_number not in sleep_start_time:
@@ -107,7 +108,7 @@ def monitor_eye_openness(data):  # 開眼率測定
             cursor.execute('''
                 INSERT INTO attentions (student_participation_id, timestamp, reason)
                 VALUES (?, ?, ?)
-            ''', (participation_id, sleep_start_time[student_number],2))
+            ''', (participation_id, sleep_start_time[student_number], 2))
             conn.commit()
             
             # 学生向け通知
@@ -130,6 +131,10 @@ def monitor_eye_openness(data):  # 開眼率測定
                 'message': 'カメラにアクセスできません。\nブラウザの設定でカメラアクセスを許可してください。'
             }, room=student_number)
         
+        # サイクル終了時の計測結果を出力して終了
+        cycle_end = time.perf_counter()
+        cycle_time = cycle_end - cycle_start
+        print("サイクル処理時間: {:.3f}秒, 周波数: {:.2f}Hz".format(cycle_time, 1/cycle_time if cycle_time else 0))
         return
     
     # フレーム処理
@@ -140,7 +145,7 @@ def monitor_eye_openness(data):  # 開眼率測定
     frame_base64 = base64.b64encode(buffer).decode('utf-8')
 
     # クライアントに送信
-    socketio.emit('processed_frame', {'image': frame_base64},room=student_number)
+    socketio.emit('processed_frame', {'image': frame_base64}, room=student_number)
 
     # デコード成功時はカウントをリセット
     decode_fail_count[student_number] = 0
@@ -148,7 +153,6 @@ def monitor_eye_openness(data):  # 開眼率測定
     # データベースから基準値を取得
     conn = current_app.get_db()
     cursor = conn.cursor()
-    # データベースから基準値とeor_thresholdを取得
     cursor.execute('''
         SELECT s.right_eye_baseline, s.left_eye_baseline, sub.eor_threshold
         FROM students s
@@ -160,6 +164,9 @@ def monitor_eye_openness(data):  # 開眼率測定
     user_data = cursor.fetchone()
 
     if not user_data:
+        cycle_end = time.perf_counter()
+        cycle_time = cycle_end - cycle_start
+        print("サイクル処理時間: {:.3f}秒, 周波数: {:.2f}Hz".format(cycle_time, 1/cycle_time if cycle_time else 0))
         return
 
     right_eye_baseline, left_eye_baseline, eor_threshold = user_data
@@ -190,12 +197,10 @@ def monitor_eye_openness(data):  # 開眼率測定
             'eorThreshold': eor_threshold
         }, room=student_number)
 
-        
-        if max_eye_openness < eor_threshold: # 現在の開眼率が閾値未満の場合、リストに追加
+        if max_eye_openness < eor_threshold:  # 現在の開眼率が閾値未満の場合、リストに追加
             low_eye_openness_count[student_number] += 1
             
-        
-        else: # 閾値以上であればリストをリセット
+        else:  # 閾値以上であればリストをリセット
             low_eye_openness_count[student_number] = 0
             
             if student_number in sleep_start_time:
@@ -215,7 +220,6 @@ def monitor_eye_openness(data):  # 開眼率測定
                 sleep_start_time.pop(student_number, None)
                 low_eye_openness_count[student_number] = 0  # カウンターをリセット
                 
-            
         if low_eye_openness_count[student_number] == 1 and student_number not in sleep_start_time:
             # 注意回数が記録された際の処理
             cursor.execute('''
@@ -241,33 +245,31 @@ def monitor_eye_openness(data):  # 開眼率測定
             cursor.execute('''
                 INSERT INTO attentions (student_participation_id, timestamp, reason)
                 VALUES (?, ?, ?)
-            ''', (participation_id, sleep_start_time[student_number],0))
+            ''', (participation_id, sleep_start_time[student_number], 0))
             # 挿入したレコードの ID を取得
             new_attention_id = cursor.lastrowid
 
             conn.commit()  # 変更を保存
             
             # 学生向け通知
-            socketio.emit('eye_openness_alert', {'message': '開眼率が連続して低下していたため、\n注意回数が記録されました。\n(誤検出の場合、画面で操作してください)'}, room=student_number)
+            socketio.emit('eye_openness_alert', {
+                'message': '開眼率が連続して低下していたため、\n注意回数が記録されました。\n(誤検出の場合、画面で操作してください)'
+            }, room=student_number)
             # low_eye_openness_warning に新しい attentions ID を渡す
             socketio.emit('low_eye_openness_warning', {'attention_id': new_attention_id}, room=student_number)
             
             # 教員向け通知
-            teacher_id = get_teacher_id_by_participation_id(participation_id)  # 関連する教員IDを取得する関数を実装
-            
+            teacher_id = get_teacher_id_by_participation_id(participation_id)
             if teacher_id:
                 teacher_room = f"teacher_{teacher_id}"
                 socketio.emit('attention_updated', {
                     'student_number': student_number,
-                    'attention_count': get_attention_count(participation_id)  # 現在の注意回数を取得
+                    'attention_count': get_attention_count(participation_id)
                 }, room=teacher_room)
                 
         # 連続で閾値以下の場合、通知を表示
         elif low_eye_openness_count[student_number] > 0 and low_eye_openness_count[student_number] % 5 == 0:
             socketio.emit('eye_openness_alert', {'message': '開眼率が低下しています！'}, room=student_number)
-
-
-
 
     else:
         print("開眼率取得失敗")
@@ -280,8 +282,6 @@ def monitor_eye_openness(data):  # 開眼率測定
 
         # 開眼率取得失敗が連続の場合、通知を送信
         if failed_eye_openness_count[student_number] == 30 and student_number not in sleep_start_time:
-            
-            # 注意回数が記録された際の処理
             cursor.execute('''
                 UPDATE student_subjects
                 SET total_attentions = total_attentions + 1
@@ -301,30 +301,31 @@ def monitor_eye_openness(data):  # 開眼率測定
             
             sleep_start_time[student_number] = datetime.now()
             
-            # attentions テーブルに新しいレコードを挿入
             cursor.execute('''
                 INSERT INTO attentions (student_participation_id, timestamp, reason)
                 VALUES (?, ?, ?)
-            ''', (participation_id, sleep_start_time[student_number],1))
-
-            conn.commit()  # 変更を保存
+            ''', (participation_id, sleep_start_time[student_number], 1))
+            conn.commit()
             
-            # 学生向け通知
             socketio.emit('eye_openness_alert', {'message': '目が検出できなかったため、注意回数が記録されました'}, room=student_number)            
             
-            # 教員向け通知
-            teacher_id = get_teacher_id_by_participation_id(participation_id)  # 関連する教員IDを取得する関数を実装
+            teacher_id = get_teacher_id_by_participation_id(participation_id)
             if teacher_id:
                 teacher_room = f"teacher_{teacher_id}"
                 socketio.emit('attention_updated', {
                     'student_number': student_number,
-                    'attention_count': get_attention_count(participation_id)  # 現在の注意回数を取得
+                    'attention_count': get_attention_count(participation_id)
                 }, room=teacher_room)
                 
-        # 開眼率取得失敗が30秒連続の場合、通知を送信
         elif failed_eye_openness_count[student_number] > 0 and failed_eye_openness_count[student_number] % 15 == 0:
-            socketio.emit('eye_openness_alert', {'message': '開眼率の検出に失敗しています。\nカメラの状態を確認してください。'}, room=student_number)
-
+            socketio.emit('eye_openness_alert', {
+                'message': '開眼率の検出に失敗しています。\nカメラの状態を確認してください。'
+            }, room=student_number)
+    
+    # サイクル終了時の計測結果を出力
+    cycle_end = time.perf_counter()
+    cycle_time = cycle_end - cycle_start
+    print("サイクル処理時間: {:.3f}秒, 周波数: {:.2f}Hz".format(cycle_time, 1/cycle_time if cycle_time else 0))
 
 
 
