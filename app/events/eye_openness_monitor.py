@@ -220,7 +220,7 @@ def monitor_eye_openness(data):  # 開眼率測定
                 sleep_start_time.pop(student_number, None)
                 low_eye_openness_count[student_number] = 0  # カウンターをリセット
                 
-        if low_eye_openness_count[student_number] == 1 and student_number not in sleep_start_time:
+        if low_eye_openness_count[student_number] == 10 and student_number not in sleep_start_time:
             # 注意回数が記録された際の処理
             cursor.execute('''
                 UPDATE student_subjects
