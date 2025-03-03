@@ -44,7 +44,7 @@ def init_db():
             default_classroom TEXT NOT NULL,
             default_day_of_week TEXT NOT NULL,
             default_period INTEGER NOT NULL,
-            ero_threshold INTEGER NOT NULL,
+            eor_threshold INTEGER NOT NULL,
             FOREIGN KEY (teacher_id) REFERENCES teachers (id)
         )
     ''')
@@ -106,6 +106,7 @@ def init_db():
             student_participation_id INTEGER NOT NULL,
             timestamp DATETIME NOT NULL,
             sleep_time TIME DEFAULT '00:00:00' NOT NULL,
+            is_correct BOOLEAN NOT NULL DEFAULT TRUE,
             FOREIGN KEY (student_participation_id) REFERENCES student_participations(id)
         )
     ''')
