@@ -191,7 +191,7 @@ def monitor_eye_openness(data):  # 開眼率測定
         save_eye_openness(conn, participation_id, eye_right_rounded, eye_left_rounded)
 
         # 両目の最大開眼率を計算
-        max_eye_openness = min(right_eye_ratio, left_eye_ratio)
+        max_eye_openness = max(right_eye_ratio, left_eye_ratio)
         socketio.emit('eye_openness_update', {
             'maxEyeOpenness': max_eye_openness,
             'eorThreshold': eor_threshold
