@@ -1,8 +1,6 @@
 SleepEstimation/<br>
   ├ app/<br>
   │  ├ events/  # 開眼率基準値、講義中の開眼率を計測する処理<br>
-  │  │  ├ baseline_measure.py  # 開眼率基準値の測定<br>
-  │  │  ├ eye_openness_monitor.py  # 講義中の開眼率測定<br>
   │  ├ eye_openness/  # 開眼率の測定方法、保存<br>
   │  ├ models/  # 学生、教員のクラスを定義するファイル<br>
   │  ├ routes/  # Flaskのルーティングを管理するフォルダ<br>
